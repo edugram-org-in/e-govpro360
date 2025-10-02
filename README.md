@@ -58,8 +58,7 @@ e-govpro360/
 ├── index.html                    # Entry point
 ├── package.json                  # NPM configuration
 ├── package-lock.json             # Lock file
-├── tailwind.config.js            # TailwindCSS config
-└── e-govpro360.zip               # Project zip (backup/archive)
+└── tailwind.config.js            # TailwindCSS config
 ```
 ---
 
