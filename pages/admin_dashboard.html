@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - e-GovPro360</title>
+    <link rel="stylesheet" href="../css/main.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom cursor styles */
+        body {
+            cursor: none;
+        }
+        
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: var(--color-primary);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: all 0.1s ease;
+            mix-blend-mode: difference;
+        }
+        
+        .custom-cursor.hover {
+            width: 40px;
+            height: 40px;
+            background: var(--color-accent);
+        }
+        
+        .custom-cursor.click {
+            width: 15px;
+            height: 15px;
+        }
+        
+        /* Page animations */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        .slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Heatmap styles */
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        
+        .employee-tile {
+            padding: 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .employee-tile:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--color-primary-300);
+        }
+        
+        .employee-tile.high-performance {
+            background: var(--color-success-50);
+            border-color: var(--color-success-200);
+        }
+        
+        .employee-tile.medium-performance {
+            background: var(--color-warning-50);
+            border-color: var(--color-warning-200);
+        }
+        
+        .employee-tile.low-performance {
+            background: var(--color-error-50);
+            border-color: var(--color-error-200);
+        }
+        
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+        
+        /* Chart containers */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        /* Search and filter styles */
+        .search-container {
+            position: relative;
+        }
+        
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            box-shadow: var(--shadow-md);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+        }
+        
+        .search-results.active {
+            display: block;
+        }
+        
+        .search-result-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .search-result-item:hover {
+            background: var(--color-primary-50);
+        }
+        
+        /* Approval workflow styles */
+        .approval-item {
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .approval-item:hover {
+            border-color: var(--color-primary-300);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .heatmap-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-container {
+                height: 250px;
+            }
+        }
+        
+        /* Notification styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--color-success);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-md);
+            z-index: 1001;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        /* Language switcher */
+        .language-switcher {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .lang-btn {
+            padding: 6px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            background: white;
+            color: var(--color-text-secondary);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .lang-btn.active {
+            background: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+        
+        .lang-btn:hover:not(.active) {
+            border-color: var(--color-primary-300);
+            color: var(--color-primary);
+        }
+        
+        /* Admin-only access control */
+        .employee-only {
+            display: none !important;
+        }
+    </style>
+<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fegovpro366174back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
+</head>
+<body class="bg-background min-h-screen font-inter">
+    <!-- Custom Cursor -->
+    <div class="custom-cursor"></div>
+    
+ 
+    
+    <!-- Header -->
+    <header class="bg-surface border-b border-border sticky top-0 z-50 fade-in">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo and Title -->
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center justify-center w-10 h-10 bg-primary-100 rounded-full">
+                        <i class="fas fa-building text-primary-600"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-text-primary">e-GovPro360</h1>
+                        <p class="text-sm text-text-secondary">Admin Dashboard</p>
+                    </div>
+                </div>
+                
+                <!-- Navigation -->
+                <nav class="hidden md:flex items-center gap-6">
+                    <a href="admin_dashboard.html"style="width: 120px;" class="text-primary font-medium border-b-2 border-primary pb-1">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </a>
+                    <a href="user_management.html" style="width: 120px;" class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-users-cog mr-2"></i>User Management
+                    </a>
+                     <a href="admin_project.html" style="width: 120px;" class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-users-cog mr-2"></i>Project Management
+                    </a>
+                    <a href="admin_feedback_recognition.html" style="width: 120px;"class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-award mr-2"></i>Feedback
+                    </a>
+                    <a href="setting.html" class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-cog mr-2"></i>Settings
+                    </a>
+                </nav>
+                
+                <!-- User Actions -->
+                <div class="flex items-center gap-4">
+                    <!-- Language Switcher -->
+                    <div class="language-switcher">
+                        <button class="lang-btn active" onclick="switchLanguage('en')">EN</button>
+                        <button class="lang-btn" onclick="switchLanguage('hi')">हिं</button>
+                    </div>
+                    
+                    <!-- Notifications -->
+                    <button class="relative p-2 text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-bell text-lg"></i>
+                        <span class="absolute -top-1 -right-1 w-5 h-5 bg-error text-white text-xs rounded-full flex items-center justify-center">3</span>
+                    </button>
+                    
+                    <!-- Profile -->
+                    <div class="flex items-center gap-3">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Admin Profile" class="w-8 h-8 rounded-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1584824486509-112e4181ff6b?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'; this.onerror=null;" />
+                        <div class="hidden sm:block">
+                            <p class="text-sm font-medium text-text-primary">Admin User</p>
+                            <p class="text-xs text-text-secondary">Administrator</p>
+                        </div>
+                        <button onclick="logout()" class="text-text-secondary hover:text-error transition-colors" style="margin-right: -40px;">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Dashboard Header -->
+        <div class="mb-8 slide-up">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h2 class="text-3xl font-bold text-text-primary">Admin Dashboard</h2>
+                    <p class="text-text-secondary mt-1">Monitor and manage employee performance across departments</p>
+                </div>
+                
+                <!-- Quick Stats -->
+                <div class="flex gap-4">
+                    <div class="bg-surface rounded-lg p-4 border border-border">
+                        <div class="text-2xl font-bold text-primary">24</div>
+                        <div class="text-sm text-text-secondary">Total Employees</div>
+                    </div>
+                    <div class="bg-surface rounded-lg p-4 border border-border">
+                        <div class="text-2xl font-bold text-accent">18</div>
+                        <div class="text-sm text-text-secondary">Active Today</div>
+                    </div>
+                    <div class="bg-surface rounded-lg p-4 border border-border">
+                        <div class="text-2xl font-bold text-warning">6</div>
+                        <div class="text-sm text-text-secondary">Pending Reviews</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Search and Filters -->
+        <div class="mb-8 slide-up" style="animation-delay: 0.1s;">
+            <div class="bg-surface rounded-xl p-6 border border-border">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <!-- Search -->
+                    <div class="search-container flex-1">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary"></i>
+                            <input type="text" id="searchInput" placeholder="Search employees by name or ID..." class="w-full pl-10 pr-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary" />
+                        </div>
+                        <div id="searchResults" class="search-results"></div>
+                    </div>
+                    
+                    <!-- Department Filter -->
+                    <select id="departmentFilter" class="px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary">
+                        <option value>All Departments</option>
+                        <option value="IT">IT Department</option>
+                        <option value="HR">HR Department</option>
+                        <option value="Finance">Finance Department</option>
+                        <option value="Operations">Operations</option>
+                    </select>
+                    
+                    <!-- Performance Filter -->
+                    <select id="performanceFilter" class="px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary">
+                        <option value>All Performance</option>
+                        <option value="high">High (80%+)</option>
+                        <option value="medium">Medium (60-79%)</option>
+                        <option value="low">Low (<60%)</option>
+                    </select>
+                    
+                    <!-- Reset Filters -->
+                    <button onclick="resetFilters()" class="px-6 py-3 bg-secondary-100 text-secondary-700 rounded-lg hover:bg-secondary-200 transition-colors">
+                        <i class="fas fa-undo mr-2"></i>Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dashboard Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Employee Performance Heatmap -->
+            <div class="lg:col-span-2 slide-up" style="animation-delay: 0.2s;">
+                <div class="bg-surface rounded-xl p-6 border border-border">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-semibold text-text-primary">Employee Performance Heatmap</h3>
+                        <div class="flex items-center gap-4 text-sm">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 bg-success rounded-full"></div>
+                                <span class="text-text-secondary">High (80%+)</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 bg-warning rounded-full"></div>
+                                <span class="text-text-secondary">Medium (60-79%)</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 bg-error rounded-full"></div>
+                                <span class="text-text-secondary">Low (<60%)</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Heatmap Grid -->
+                    <div id="heatmapGrid" class="heatmap-grid">
+                        <!-- Employee tiles will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Analytics Panel -->
+            <div class="space-y-6 slide-up" style="animation-delay: 0.3s;">
+                <!-- Department Productivity Chart -->
+                <div class="bg-surface rounded-xl p-6 border border-border">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4">Department Productivity</h3>
+                    <div class="chart-container">
+                        <canvas id="departmentChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- KPI Completion Chart -->
+                <div class="bg-surface rounded-xl p-6 border border-border">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4">KPI Completion Rates</h3>
+                    <div class="chart-container">
+                        <canvas id="kpiChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Management Tools -->
+        <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Employee Management -->
+            <div class="bg-surface rounded-xl p-6 border border-border slide-up" style="animation-delay: 0.4s;">
+                <h3 class="text-xl font-semibold text-text-primary mb-6">Quick Actions</h3>
+                
+                <div class="space-y-4">
+                    <a href="user_management.html" class="w-full bg-primary hover:bg-primary-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+                        <i class="fas fa-users-cog"></i>
+                        User Management
+                    </a>
+                    
+                    <button onclick="openAssignKPIModal()" class="w-full bg-accent hover:bg-accent-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+                        <i class="fas fa-tasks"></i>
+                        Assign KPIs
+                    </button>
+                    
+                    <button onclick="openBulkActionsModal()" class="w-full bg-secondary hover:bg-secondary-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+                        <i class="fas fa-cogs"></i>
+                        Bulk Actions
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Approval Workflow -->
+            <div class="bg-surface rounded-xl p-6 border border-border slide-up" style="animation-delay: 0.5s;">
+                <h3 class="text-xl font-semibold text-text-primary mb-6">Pending Approvals</h3>
+                
+                <div id="approvalList" class="space-y-3 max-h-80 overflow-y-auto">
+                    <!-- Approval items will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Employee Detail Modal -->
+    <div id="employeeModal" class="modal">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-semibold text-text-primary">Employee Details</h3>
+                <button onclick="closeModal('employeeModal')" class="text-text-secondary hover:text-text-primary">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div id="employeeDetails">
+                <!-- Employee details will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Custom cursor functionality
+        const cursor = document.querySelector('.custom-cursor');
+        let mouseX = 0;
+        let mouseY = 0;
+        let cursorX = 0;
+        let cursorY = 0;
+        
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+        
+        function animateCursor() {
+            cursorX += (mouseX - cursorX) * 0.1;
+            cursorY += (mouseY - cursorY) * 0.1;
+            cursor.style.left = cursorX + 'px';
+            cursor.style.top = cursorY + 'px';
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+        
+        // Cursor hover effects
+        document.querySelectorAll('button, a, input, select, .employee-tile').forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+        
+        document.addEventListener('mousedown', () => cursor.classList.add('click'));
+        document.addEventListener('mouseup', () => cursor.classList.remove('click'));
+        
+        // Mock employee data
+        const employees = [
+            { id: 'EMP001', name: 'Rajesh Kumar', department: 'IT', position: 'Senior Developer', performance: 92, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
+            { id: 'EMP002', name: 'Priya Sharma', department: 'HR', position: 'HR Manager', performance: 88, avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
+            { id: 'EMP003', name: 'Amit Singh', department: 'Finance', position: 'Financial Analyst', performance: 76, avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
+            { id: 'EMP004', name: 'Sunita Patel', department: 'Operations', position: 'Operations Manager', performance: 94, avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
+            { id: 'EMP005', name: 'Vikram Gupta', department: 'IT', position: 'System Admin', performance: 82, avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
+            { id: 'EMP006', name: 'Meera Joshi', department: 'HR', position: 'Recruiter', performance: 67, avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
+            { id: 'EMP007', name: 'Arjun Reddy', department: 'Finance', position: 'Accountant', performance: 71, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
+            { id: 'EMP008', name: 'Kavya Nair', department: 'Operations', position: 'Project Coordinator', performance: 85, avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
+            { id: 'EMP009', name: 'Rohit Mehta', department: 'IT', position: 'Frontend Developer', performance: 79, avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
+            { id: 'EMP010', name: 'Anita Desai', department: 'HR', position: 'Training Specialist', performance: 91, avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
+            { id: 'EMP011', name: 'Deepak Agarwal', department: 'Finance', position: 'Budget Analyst', performance: 58, avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
+            { id: 'EMP012', name: 'Neha Kapoor', department: 'Operations', position: 'Quality Analyst', performance: 87, avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' }
+        ];
+        
+        // Mock pending approvals
+        const pendingApprovals = [
+            { id: 1, employee: 'Rajesh Kumar', task: 'Database Optimization', status: 'pending', date: '2025-01-10', description: 'Completed database optimization task with 15% performance improvement' },
+            { id: 2, employee: 'Priya Sharma', task: 'Employee Training', status: 'pending', date: '2025-01-10', description: 'Conducted training session for 20 new employees' },
+            { id: 3, employee: 'Amit Singh', task: 'Budget Analysis', status: 'pending', date: '2025-01-09', description: 'Completed Q4 budget analysis and cost optimization report' },
+            { id: 4, employee: 'Sunita Patel', task: 'Process Improvement', status: 'pending', date: '2025-01-09', description: 'Implemented new workflow process reducing processing time by 25%' },
+            { id: 5, employee: 'Vikram Gupta', task: 'System Maintenance', status: 'pending', date: '2025-01-08', description: 'Performed scheduled system maintenance and security updates' },
+            { id: 6, employee: 'Meera Joshi', task: 'Recruitment Drive', status: 'pending', date: '2025-01-08', description: 'Successfully recruited 5 candidates for IT department positions' }
+        ];
+        
+        // Initialize dashboard
+        function initializeDashboard() {
+            renderHeatmap();
+            renderCharts();
+            renderApprovals();
+            setupSearch();
+        }
+        
+        // Render employee heatmap
+        function renderHeatmap(filteredEmployees = employees) {
+            const heatmapGrid = document.getElementById('heatmapGrid');
+            heatmapGrid.innerHTML = '';
+            
+            filteredEmployees.forEach(employee => {
+                const performanceClass = getPerformanceClass(employee.performance);
+                const tile = document.createElement('div');
+                tile.className = `employee-tile ${performanceClass}`;
+                tile.onclick = () => openEmployeeModal(employee);
+                
+                tile.innerHTML = `
+                    <div class="flex items-center gap-3 mb-3">
+                        <img src="${employee.avatar}" 
+                             alt="${employee.name}" 
+                             class="w-12 h-12 rounded-full object-cover"
+                             onerror="this.src='https://images.unsplash.com/photo-1584824486509-112e4181ff6b?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'; this.onerror=null;">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-text-primary">${employee.name}</h4>
+                            <p class="text-sm text-text-secondary">${employee.id}</p>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-text-secondary">Department</span>
+                            <span class="text-sm font-medium text-text-primary">${employee.department}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-text-secondary">Performance</span>
+                            <span class="text-sm font-bold ${getPerformanceTextColor(employee.performance)}">${employee.performance}%</span>
+                        </div>
+                        <div class="w-full bg-secondary-200 rounded-full h-2">
+                            <div class="h-2 rounded-full ${getPerformanceBarColor(employee.performance)}" 
+                                 style="width: ${employee.performance}%"></div>
+                        </div>
+                    </div>
+                `;
+                
+                heatmapGrid.appendChild(tile);
+            });
+        }
+        
+        // Get performance class
+        function getPerformanceClass(performance) {
+            if (performance >= 80) return 'high-performance';
+            if (performance >= 60) return 'medium-performance';
+            return 'low-performance';
+        }
+        
+        // Get performance text color
+        function getPerformanceTextColor(performance) {
+            if (performance >= 80) return 'text-success';
+            if (performance >= 60) return 'text-warning';
+            return 'text-error';
+        }
+        
+        // Get performance bar color
+        function getPerformanceBarColor(performance) {
+            if (performance >= 80) return 'bg-success';
+            if (performance >= 60) return 'bg-warning';
+            return 'bg-error';
+        }
+        
+        // Render charts
+        function renderCharts() {
+            // Department Productivity Pie Chart
+            const departmentCtx = document.getElementById('departmentChart').getContext('2d');
+            new Chart(departmentCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['IT Department', 'HR Department', 'Finance Department', 'Operations'],
+                    datasets: [{
+                        data: [35, 25, 20, 20],
+                        backgroundColor: [
+                            'var(--color-primary)',
+                            'var(--color-accent)',
+                            'var(--color-warning)',
+                            'var(--color-secondary)'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        }
+                    },
+                    animation: {
+                        animateRotate: true,
+                        duration: 1000
+                    }
+                }
+            });
+            
+            // KPI Completion Bar Chart
+            const kpiCtx = document.getElementById('kpiChart').getContext('2d');
+            new Chart(kpiCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Task Completion', 'Quality Score', 'Timeliness', 'Innovation', 'Collaboration'],
+                    datasets: [{
+                        label: 'Completion Rate (%)',
+                        data: [85, 78, 92, 67, 81],
+                        backgroundColor: [
+                            'var(--color-primary)',
+                            'var(--color-accent)',
+                            'var(--color-success)',
+                            'var(--color-warning)',
+                            'var(--color-secondary)'
+                        ],
+                        borderRadius: 4,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+        
+        // Render pending approvals
+        function renderApprovals() {
+            const approvalList = document.getElementById('approvalList');
+            approvalList.innerHTML = '';
+            
+            pendingApprovals.forEach(approval => {
+                const approvalItem = document.createElement('div');
+                approvalItem.className = 'approval-item';
+                
+                approvalItem.innerHTML = `
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <h4 class="font-medium text-text-primary">${approval.employee}</h4>
+                            <p class="text-sm text-text-secondary">${approval.task}</p>
+                            <p class="text-xs text-text-secondary mt-1">${approval.date}</p>
+                        </div>
+                        <span class="px-2 py-1 bg-warning-100 text-warning-600 text-xs rounded-full">Pending</span>
+                    </div>
+                    <p class="text-sm text-text-secondary mb-3">${approval.description}</p>
+                    <div class="flex gap-2">
+                        <button onclick="approveTask(${approval.id})" 
+                                class="flex-1 bg-success hover:bg-success-600 text-white text-sm py-2 px-3 rounded-lg transition-colors">
+                            <i class="fas fa-check mr-1"></i>Approve
+                        </button>
+                        <button onclick="rejectTask(${approval.id})" 
+                                class="flex-1 bg-error hover:bg-error-600 text-white text-sm py-2 px-3 rounded-lg transition-colors">
+                            <i class="fas fa-times mr-1"></i>Reject
+                        </button>
+                    </div>
+                `;
+                
+                approvalList.appendChild(approvalItem);
+            });
+        }
+        
+        // Setup search functionality
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
+            
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase();
+                
+                if (query.length > 0) {
+                    const filteredEmployees = employees.filter(emp => 
+                        emp.name.toLowerCase().includes(query) || 
+                        emp.id.toLowerCase().includes(query)
+                    );
+                    
+                    if (filteredEmployees.length > 0) {
+                        searchResults.innerHTML = filteredEmployees.map(emp => `
+                            <div class="search-result-item" onclick="selectEmployee('${emp.id}')">
+                                <div class="flex items-center gap-3">
+                                    <img src="${emp.avatar}" alt="${emp.name}" class="w-8 h-8 rounded-full object-cover">
+                                    <div>
+                                        <div class="font-medium text-text-primary">${emp.name}</div>
+                                        <div class="text-sm text-text-secondary">${emp.id} - ${emp.department}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('');
+                        searchResults.classList.add('active');
+                    } else {
+                        searchResults.innerHTML = '<div class="search-result-item">No employees found</div>';
+                        searchResults.classList.add('active');
+                    }
+                } else {
+                    searchResults.classList.remove('active');
+                }
+            });
+            
+            // Close search results when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                    searchResults.classList.remove('active');
+                }
+            });
+        }
+        
+        // Filter functions
+        function applyFilters() {
+            const departmentFilter = document.getElementById('departmentFilter').value;
+            const performanceFilter = document.getElementById('performanceFilter').value;
+            
+            let filteredEmployees = employees;
+            
+            if (departmentFilter) {
+                filteredEmployees = filteredEmployees.filter(emp => emp.department === departmentFilter);
+            }
+            
+            if (performanceFilter) {
+                filteredEmployees = filteredEmployees.filter(emp => {
+                    if (performanceFilter === 'high') return emp.performance >= 80;
+                    if (performanceFilter === 'medium') return emp.performance >= 60 && emp.performance < 80;
+                    if (performanceFilter === 'low') return emp.performance < 60;
+                    return true;
+                });
+            }
+            
+            renderHeatmap(filteredEmployees);
+        }
+        
+        // Reset filters
+        function resetFilters() {
+            document.getElementById('departmentFilter').value = '';
+            document.getElementById('performanceFilter').value = '';
+            document.getElementById('searchInput').value = '';
+            renderHeatmap();
+        }
+        
+        // Modal functions
+        function openEmployeeModal(employee) {
+            const modal = document.getElementById('employeeModal');
+            const details = document.getElementById('employeeDetails');
+            
+            details.innerHTML = `
+                <div class="flex items-center gap-4 mb-6">
+                    <img src="${employee.avatar}" alt="${employee.name}" class="w-16 h-16 rounded-full object-cover">
+                    <div>
+                        <h4 class="text-xl font-semibold text-text-primary">${employee.name}</h4>
+                        <p class="text-text-secondary">${employee.id} - ${employee.position}</p>
+                        <p class="text-sm text-text-secondary">${employee.department}</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <h5 class="font-semibold text-text-primary">Performance Metrics</h5>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-text-secondary">Overall Performance</span>
+                                <span class="font-semibold ${getPerformanceTextColor(employee.performance)}">${employee.performance}%</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-text-secondary">Tasks Completed</span>
+                                <span class="font-semibold text-text-primary">24/28</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-text-secondary">Quality Score</span>
+                                <span class="font-semibold text-text-primary">4.2/5.0</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-text-secondary">Attendance</span>
+                                <span class="font-semibold text-success">98%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <h5 class="font-semibold text-text-primary">Recent Activities</h5>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-check-circle text-success"></i>
+                                <span class="text-text-secondary">Completed project milestone</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-clock text-warning"></i>
+                                <span class="text-text-secondary">Updated task status</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-star text-accent"></i>
+                                <span class="text-text-secondary">Received recognition badge</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4 mt-6 pt-6 border-t border-border">
+                    <button onclick="viewEmployeeProfile('${employee.id}')" class="flex-1 bg-primary hover:bg-primary-700 text-white py-2 px-4 rounded-lg transition-colors">
+                        View Full Profile
+                    </button>
+                    <button onclick="assignTask('${employee.id}')" class="flex-1 bg-accent hover:bg-accent-700 text-white py-2 px-4 rounded-lg transition-colors">
+                        Assign Task
+                    </button>
+                </div>
+            `;
+            
+            modal.classList.add('active');
+        }
+        
+        function openAssignKPIModal() {
+            showNotification('KPI Assignment feature available in User Management!');
+        }
+        
+        function openBulkActionsModal() {
+            showNotification('Bulk Actions feature available in User Management!');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+        
+        // Action functions
+        function approveTask(approvalId) {
+            const approval = pendingApprovals.find(a => a.id === approvalId);
+            if (approval) {
+                showNotification(`Approved: ${approval.task} by ${approval.employee}`);
+                // Remove from pending list
+                const index = pendingApprovals.findIndex(a => a.id === approvalId);
+                if (index > -1) {
+                    pendingApprovals.splice(index, 1);
+                    renderApprovals();
+                }
+            }
+        }
+        
+        function rejectTask(approvalId) {
+            const approval = pendingApprovals.find(a => a.id === approvalId);
+            if (approval) {
+                showNotification(`Rejected: ${approval.task} by ${approval.employee}`, 'error');
+                // Remove from pending list
+                const index = pendingApprovals.findIndex(a => a.id === approvalId);
+                if (index > -1) {
+                    pendingApprovals.splice(index, 1);
+                    renderApprovals();
+                }
+            }
+        }
+        
+        function selectEmployee(employeeId) {
+            const employee = employees.find(emp => emp.id === employeeId);
+            if (employee) {
+                document.getElementById('searchResults').classList.remove('active');
+                document.getElementById('searchInput').value = employee.name;
+                openEmployeeModal(employee);
+            }
+        }
+        
+        function viewEmployeeProfile(employeeId) {
+            showNotification('Redirecting to employee profile...');
+            closeModal('employeeModal');
+        }
+        
+        function assignTask(employeeId) {
+            const employee = employees.find(emp => emp.id === employeeId);
+            showNotification(`Redirecting to task assignment for ${employee.name}...`);
+            closeModal('employeeModal');
+            // Redirect to user management with pre-selected user
+            setTimeout(() => {
+                window.location.href = `user_management.html?employee=${employeeId}`;
+            }, 1000);
+        }
+        
+        // Utility functions
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            
+            notificationText.textContent = message;
+            notification.className = `notification ${type === 'error' ? 'bg-error' : 'bg-success'}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        function switchLanguage(lang) {
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            showNotification(`Language switched to ${lang === 'en' ? 'English' : 'Hindi'}`);
+        }
+        
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = 'login.html';
+            }
+        }
+        
+        // Setup filter event listeners
+        document.getElementById('departmentFilter').addEventListener('change', applyFilters);
+        document.getElementById('performanceFilter').addEventListener('change', applyFilters);
+        
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', initializeDashboard);
+    </script>
+<script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+
+    <script src="https://cdn.botpress.cloud/webchat/v3.3/inject.js"></script>
+<script src="https://files.bpcontent.cloud/2025/10/01/06/20251001065837-31L1AP49.js" defer></script>
+    
+</body>
+</html>

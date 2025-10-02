@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings - e-GovPro360</title>
+    <link rel="stylesheet" href="../css/main.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <style>
+        /* Custom cursor styles */
+        body {
+            cursor: none;
+        }
+        
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: var(--color-primary);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: all 0.1s ease;
+            mix-blend-mode: difference;
+        }
+        
+        .custom-cursor.hover {
+            width: 40px;
+            height: 40px;
+            background: var(--color-accent);
+        }
+        
+        .custom-cursor.click {
+            width: 15px;
+            height: 15px;
+        }
+
+        /* Dark theme variables */
+        [data-theme="dark"] {
+            --color-background: #0F172A;
+            --color-surface: #1E293B;
+            --color-text-primary: #F1F5F9;
+            --color-text-secondary: #94A3B8;
+            --color-border: #334155;
+            --color-border-light: #475569;
+        }
+
+        /* Theme toggle switch */
+        .theme-toggle {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .theme-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .theme-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--color-secondary-300);
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+
+        .theme-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 12px;
+            color: var(--color-warning-500);
+        }
+
+        .theme-toggle input:checked + .theme-slider {
+            background-color: var(--color-primary);
+        }
+
+        .theme-toggle input:focus + .theme-slider {
+            box-shadow: 0 0 1px var(--color-primary);
+        }
+
+        .theme-toggle input:checked + .theme-slider:before {
+            transform: translateX(26px);
+            color: var(--color-primary);
+        }
+
+        .theme-slider:before {
+            content: "\f185"; /* sun icon */
+        }
+
+        .theme-toggle input:checked + .theme-slider:before {
+            content: "\f186"; /* moon icon */
+        }
+
+        /* Language toggle */
+        .language-toggle {
+            display: flex;
+            background: var(--color-surface);
+            border: 2px solid var(--color-border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .language-option {
+            flex: 1;
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            color: var(--color-text-secondary);
+        }
+
+        .language-option.active {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .language-option:hover:not(.active) {
+            background: var(--color-primary-50);
+            color: var(--color-primary);
+        }
+
+        /* Settings sections */
+        .settings-section {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .settings-section:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--color-surface);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            transform: scale(0.9);
+            transition: all 0.3s ease;
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .settings-section {
+                padding: 16px;
+                margin-bottom: 16px;
+            }
+
+            .modal-content {
+                padding: 24px;
+                margin: 20px;
+            }
+        }
+
+        /* Theme preview */
+        .theme-preview {
+            border: 2px solid var(--color-border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .preview-header {
+            height: 8px;
+            background: var(--color-primary);
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+
+        .preview-content {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .preview-sidebar {
+            width: 60px;
+            height: 40px;
+            background: var(--color-secondary-100);
+            border-radius: 6px;
+        }
+
+        .preview-main {
+            flex: 1;
+            height: 40px;
+            background: var(--color-background);
+            border-radius: 6px;
+        }
+    </style>
+<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fegovpro366174back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
+</head>
+<body class="bg-background min-h-screen font-inter transition-all duration-300" data-theme="light">
+    <!-- Custom Cursor -->
+    <div class="custom-cursor"></div>
+
+    <!-- Header -->
+    <header class="bg-surface border-b border-border sticky top-0 z-50 fade-in">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo and Title -->
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-building text-primary-600 text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-text-primary">e-GovPro360</h1>
+                        <p class="text-xs text-text-secondary">Settings & Preferences</p>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="hidden md:flex items-center gap-6">
+                    <a href="admin_dashboard.html" class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </a>
+                     <a href="user_management.html" class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-tachometer-alt mr-2"></i>User Management
+                    </a>
+                     <a href="admin_project.html" class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Project Management
+                    </a>
+                    <a href="admin_feedback_recognition.html" class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-star mr-2"></i>Recognition
+                    </a>
+                   
+                    <a href="login.html" class="text-text-secondary hover:text-error transition-colors">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </a>
+                </nav>
+
+                <!-- Mobile Menu Button -->
+                <button class="md:hidden p-2 text-text-secondary hover:text-primary" onclick="toggleMobileMenu()">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="md:hidden bg-surface border-t border-border hidden">
+            <div class="px-4 py-2 space-y-2">
+                <a href="employee_dashboard.html" class="block py-2 text-text-secondary hover:text-primary transition-colors">
+                    <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                </a>
+                <a href="feedback_recognition.html" class="block py-2 text-text-secondary hover:text-primary transition-colors">
+                    <i class="fas fa-star mr-2"></i>Recognition
+                </a>
+                <a href="admin_dashboard.html" class="block py-2 text-text-secondary hover:text-primary transition-colors">
+                    <i class="fas fa-users-cog mr-2"></i>Admin
+                </a>
+                
+                <a href="login.html" class="block py-2 text-text-secondary hover:text-error transition-colors">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Header -->
+        <div class="mb-8 slide-up">
+            <h2 class="text-3xl font-bold text-text-primary mb-2">Settings & Preferences</h2>
+            <p class="text-text-secondary">Customize your e-GovPro360 experience and manage your account preferences</p>
+        </div>
+
+        <!-- Appearance Settings -->
+        <section class="settings-section slide-up" style="animation-delay: 0.1s;">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-palette text-primary-600 text-lg"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-text-primary">Appearance</h3>
+                    <p class="text-sm text-text-secondary">Customize the visual theme of your dashboard</p>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Theme Toggle -->
+                <div class="flex items-center justify-between">
+                    <div>
+                        <label class="text-base font-medium text-text-primary">Theme Mode</label>
+                        <p class="text-sm text-text-secondary">Switch between light and dark themes</p>
+                    </div>
+                    <label class="theme-toggle">
+                        <input type="checkbox" id="themeToggle" onchange="toggleTheme()" />
+                        <span class="theme-slider"></span>
+                    </label>
+                </div>
+
+                <!-- Theme Preview -->
+                <div class="theme-preview">
+                    <div class="preview-header"></div>
+                    <div class="preview-content">
+                        <div class="preview-sidebar"></div>
+                        <div class="preview-main"></div>
+                    </div>
+                    <div class="text-xs text-text-secondary mt-2">Preview of current theme</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Language & Localization -->
+        <section class="settings-section slide-up" style="animation-delay: 0.2s;">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-12 h-12 bg-accent-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-globe text-accent-600 text-lg"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-text-primary">Language & Localization</h3>
+                    <p class="text-sm text-text-secondary">Set your preferred language and regional formats</p>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Language Selection -->
+                <div>
+                    <label class="block text-base font-medium text-text-primary mb-3">Display Language</label>
+                    <div class="language-toggle">
+                        <button class="language-option active" onclick="setLanguage('en')">
+                            <i class="fas fa-flag-usa mr-2"></i>English
+                        </button>
+                        <button class="language-option" onclick="setLanguage('hi')">
+                            <i class="fas fa-flag mr-2"></i>हिंदी
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Regional Settings -->
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Date Format</label>
+                        <select class="w-full p-3 border border-border rounded-lg bg-surface text-text-primary focus:border-primary focus:outline-none">
+                            <option value="dd/mm/yyyy">DD/MM/YYYY (Indian)</option>
+                            <option value="mm/dd/yyyy">MM/DD/YYYY (US)</option>
+                            <option value="yyyy-mm-dd">YYYY-MM-DD (ISO)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Number Format</label>
+                        <select class="w-full p-3 border border-border rounded-lg bg-surface text-text-primary focus:border-primary focus:outline-none">
+                            <option value="indian">1,00,000 (Indian)</option>
+                            <option value="international">100,000 (International)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Profile Management -->
+        <section class="settings-section slide-up" style="animation-delay: 0.3s;">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-12 h-12 bg-warning-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-user-cog text-warning-600 text-lg"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-text-primary">Profile Management</h3>
+                    <p class="text-sm text-text-secondary">Manage your account data and preferences</p>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Profile Actions -->
+                <div class="grid md:grid-cols-2 gap-4">
+                    <button onclick="exportData()" class="flex items-center justify-center gap-3 p-4 border-2 border-primary text-primary rounded-lg hover:bg-primary-50 transition-all duration-200">
+                        <i class="fas fa-download"></i>
+                        <span>Export Data</span>
+                    </button>
+                    <button onclick="showResetModal()" class="flex items-center justify-center gap-3 p-4 border-2 border-error text-error rounded-lg hover:bg-error-50 transition-all duration-200">
+                        <i class="fas fa-refresh"></i>
+                        <span>Reset Profile</span>
+                    </button>
+                </div>
+
+                <!-- Data Usage -->
+                <div class="bg-secondary-50 rounded-lg p-4">
+                    <h4 class="font-medium text-text-primary mb-2">Data Usage Summary</h4>
+                    <div class="space-y-2 text-sm text-text-secondary">
+                        <div class="flex justify-between">
+                            <span>Tasks Completed:</span>
+                            <span class="font-medium">247</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>KPIs Tracked:</span>
+                            <span class="font-medium">12</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Badges Earned:</span>
+                            <span class="font-medium">8</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Last Backup:</span>
+                            <span class="font-medium">01/10/2025</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Security & Privacy -->
+        <section class="settings-section slide-up" style="animation-delay: 0.4s;">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-12 h-12 bg-error-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-shield-alt text-error-600 text-lg"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-text-primary">Security & Privacy</h3>
+                    <p class="text-sm text-text-secondary">Manage your security settings and privacy preferences</p>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Security Options -->
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <label class="text-base font-medium text-text-primary">Two-Factor Authentication</label>
+                            <p class="text-sm text-text-secondary">Add an extra layer of security to your account</p>
+                        </div>
+                        <button class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-700 transition-colors">
+                            Enable
+                        </button>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <label class="text-base font-medium text-text-primary">Session Timeout</label>
+                            <p class="text-sm text-text-secondary">Automatically log out after inactivity</p>
+                        </div>
+                        <select class="p-2 border border-border rounded-lg bg-surface text-text-primary focus:border-primary focus:outline-none">
+                            <option value="30">30 minutes</option>
+                            <option value="60" selected>1 hour</option>
+                            <option value="120">2 hours</option>
+                            <option value="240">4 hours</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Privacy Settings -->
+                <div class="bg-secondary-50 rounded-lg p-4">
+                    <h4 class="font-medium text-text-primary mb-3">Privacy Controls</h4>
+                    <div class="space-y-3">
+                        <label class="flex items-center gap-3">
+                            <input type="checkbox" checked class="w-4 h-4 text-primary border-border rounded focus:ring-primary" />
+                            <span class="text-sm text-text-secondary">Allow performance analytics</span>
+                        </label>
+                        <label class="flex items-center gap-3">
+                            <input type="checkbox" checked class="w-4 h-4 text-primary border-border rounded focus:ring-primary" />
+                            <span class="text-sm text-text-secondary">Enable usage statistics</span>
+                        </label>
+                        <label class="flex items-center gap-3">
+                            <input type="checkbox" class="w-4 h-4 text-primary border-border rounded focus:ring-primary" />
+                            <span class="text-sm text-text-secondary">Share data with department heads</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Save Button -->
+        <div class="flex justify-end gap-4 mt-8 slide-up" style="animation-delay: 0.5s;">
+            <button onclick="resetSettings()" class="px-6 py-3 border border-border text-text-secondary rounded-lg hover:bg-secondary-50 transition-colors">
+                Reset to Default
+            </button>
+            <button onclick="saveSettings()" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-700 transition-colors">
+                <i class="fas fa-save mr-2"></i>
+                Save Changes
+            </button>
+        </div>
+    </main>
+
+    <!-- Reset Confirmation Modal -->
+    <div id="resetModal" class="modal">
+        <div class="modal-content">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-error-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-exclamation-triangle text-error-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-text-primary mb-2">Reset Profile Data?</h3>
+                <p class="text-text-secondary mb-6">This action will permanently delete all your progress, badges, and preferences. This cannot be undone.</p>
+                
+                <div class="flex gap-3 justify-center">
+                    <button onclick="hideResetModal()" class="px-6 py-2 border border-border text-text-secondary rounded-lg hover:bg-secondary-50 transition-colors">
+                        Cancel
+                    </button>
+                    <button onclick="confirmReset()" class="px-6 py-2 bg-error text-white rounded-lg hover:bg-error-600 transition-colors">
+                        Reset Profile
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-surface border-t border-border mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center text-sm text-text-secondary">
+                <p>© 2025 Government of India. All Rights Reserved.</p>
+                <p class="mt-1">Powered by Digital India Initiative</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Custom cursor functionality
+        const cursor = document.querySelector('.custom-cursor');
+        let mouseX = 0;
+        let mouseY = 0;
+        let cursorX = 0;
+        let cursorY = 0;
+        
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+        
+        function animateCursor() {
+            cursorX += (mouseX - cursorX) * 0.1;
+            cursorY += (mouseY - cursorY) * 0.1;
+            cursor.style.left = cursorX + 'px';
+            cursor.style.top = cursorY + 'px';
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+        
+        // Cursor hover effects
+        document.querySelectorAll('button, a, input, select, label').forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+        
+        document.addEventListener('mousedown', () => cursor.classList.add('click'));
+        document.addEventListener('mouseup', () => cursor.classList.remove('click'));
+
+        // Theme toggle functionality
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Show toast notification
+            showToast(`Switched to ${newTheme} theme`, 'success');
+        }
+
+        // Language switching
+        function setLanguage(lang) {
+            document.querySelectorAll('.language-option').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            localStorage.setItem('language', lang);
+            showToast(`Language changed to ${lang === 'en' ? 'English' : 'हिंदी'}`, 'success');
+        }
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Modal functions
+        function showResetModal() {
+            document.getElementById('resetModal').classList.add('active');
+        }
+
+        function hideResetModal() {
+            document.getElementById('resetModal').classList.remove('active');
+        }
+
+        function confirmReset() {
+            // Simulate profile reset
+            hideResetModal();
+            showToast('Profile has been reset successfully', 'success');
+            
+            // Reset form values
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            document.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+        }
+
+        // Export data function
+        function exportData() {
+            // Simulate data export
+            const data = {
+                profile: {
+                    name: 'Rajesh Kumar',
+                    employeeId: 'EMP001',
+                    department: 'IT Services'
+                },
+                stats: {
+                    tasksCompleted: 247,
+                    kpisTracked: 12,
+                    badgesEarned: 8
+                },
+                settings: {
+                    theme: localStorage.getItem('theme') || 'light',
+                    language: localStorage.getItem('language') || 'en'
+                },
+                exportDate: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'egov-profile-data.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast('Profile data exported successfully', 'success');
+        }
+
+        // Save settings
+        function saveSettings() {
+            // Simulate saving settings
+            const settings = {
+                theme: document.body.getAttribute('data-theme'),
+                language: localStorage.getItem('language') || 'en',
+                dateFormat: document.querySelector('select').value,
+                sessionTimeout: document.querySelectorAll('select')[1].value,
+                privacy: {
+                    analytics: document.querySelectorAll('input[type="checkbox"]')[0].checked,
+                    statistics: document.querySelectorAll('input[type="checkbox"]')[1].checked,
+                    shareData: document.querySelectorAll('input[type="checkbox"]')[2].checked
+                }
+            };
+            
+            localStorage.setItem('userSettings', JSON.stringify(settings));
+            showToast('Settings saved successfully', 'success');
+        }
+
+        // Reset settings
+        function resetSettings() {
+            if (confirm('Are you sure you want to reset all settings to default?')) {
+                // Reset to defaults
+                document.body.setAttribute('data-theme', 'light');
+                document.getElementById('themeToggle').checked = false;
+                
+                // Reset language
+                document.querySelectorAll('.language-option').forEach(btn => btn.classList.remove('active'));
+                document.querySelector('.language-option').classList.add('active');
+                
+                // Reset form values
+                document.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+                document.querySelectorAll('input[type="checkbox"]').forEach((cb, index) => {
+                    cb.checked = index < 2; // First two checkboxes checked by default
+                });
+                
+                localStorage.removeItem('userSettings');
+                showToast('Settings reset to default', 'success');
+            }
+        }
+
+        // Toast notification system
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-white font-medium transform translate-x-full transition-transform duration-300 ${
+                type === 'success' ? 'bg-success' : 
+                type === 'error' ? 'bg-error' : 
+                'bg-primary'
+            }`;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Animate out and remove
+            setTimeout(() => {
+                toast.style.transform = 'translateX(full)';
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+
+        // Load saved settings on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load theme
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+            document.getElementById('themeToggle').checked = savedTheme === 'dark';
+            
+            // Load language
+            const savedLanguage = localStorage.getItem('language') || 'en';
+            document.querySelectorAll('.language-option').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[onclick="setLanguage('${savedLanguage}')"]`).classList.add('active');
+            
+            // Load other settings
+            const savedSettings = localStorage.getItem('userSettings');
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
+                // Apply saved settings to form elements
+                // This would be expanded based on actual form structure
+            }
+        });
+
+        // Close modal when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+            }
+        });
+    </script>
+<script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+
+    <script src="https://cdn.botpress.cloud/webchat/v3.3/inject.js"></script>
+<script src="https://files.bpcontent.cloud/2025/10/01/06/20251001065837-31L1AP49.js" defer></script>
+    
+</body>
+</html>

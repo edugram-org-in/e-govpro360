@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Management - e-GovPro360</title>
+    <link rel="stylesheet" href="../css/main.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <style>
+        /* Custom cursor styles */
+        body {
+            cursor: none;
+        }
+        
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: var(--color-primary);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: all 0.1s ease;
+            mix-blend-mode: difference;
+        }
+        
+        .custom-cursor.hover {
+            width: 40px;
+            height: 40px;
+            background: var(--color-accent);
+        }
+        
+        .custom-cursor.click {
+            width: 15px;
+            height: 15px;
+        }
+        
+        /* Page animations */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        .slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* User card styles */
+        .user-card {
+            background: var(--color-surface);
+            border: 2px solid var(--color-border);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .user-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--color-primary-300);
+        }
+        
+        .user-card.selected {
+            border-color: var(--color-primary);
+            background: var(--color-primary-50);
+        }
+        
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: var(--color-surface);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+        
+        /* Form styles */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .form-field {
+            margin-bottom: 16px;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: var(--color-text-primary);
+            margin-bottom: 6px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--color-border);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+            background: var(--color-background);
+            color: var(--color-text-primary);
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px var(--color-primary-100);
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--color-border);
+            border-radius: 8px;
+            font-size: 14px;
+            background: var(--color-background);
+            color: var(--color-text-primary);
+            cursor: pointer;
+        }
+        
+        /* Drag and drop styles */
+        .drag-drop-area {
+            border: 2px dashed var(--color-border);
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            background: var(--color-background);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .drag-drop-area:hover {
+            border-color: var(--color-primary);
+            background: var(--color-primary-50);
+        }
+        
+        .drag-drop-area.dragover {
+            border-color: var(--color-primary);
+            background: var(--color-primary-100);
+            transform: scale(1.02);
+        }
+        
+        /* Task assignment styles */
+        .task-item {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            cursor: grab;
+            transition: all 0.3s ease;
+        }
+        
+        .task-item:active {
+            cursor: grabbing;
+        }
+        
+        .task-item.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+        
+        .task-dropzone {
+            min-height: 200px;
+            border: 2px dashed var(--color-border);
+            border-radius: 8px;
+            padding: 16px;
+            background: var(--color-background);
+        }
+        
+        .task-dropzone.dragover {
+            border-color: var(--color-success);
+            background: var(--color-success-50);
+        }
+        
+        /* Progress bar */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--color-secondary-200);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-primary-400));
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        /* Status badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: var(--color-success-100);
+            color: var(--color-success-700);
+        }
+        
+        .status-inactive {
+            background: var(--color-error-100);
+            color: var(--color-error-700);
+        }
+        
+        .status-pending {
+            background: var(--color-warning-100);
+            color: var(--color-warning-700);
+        }
+        
+        /* Search and filter bar */
+        .search-bar {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 44px 12px 16px;
+            border: 2px solid var(--color-border);
+            border-radius: 25px;
+            font-size: 14px;
+            background: var(--color-background);
+            color: var(--color-text-primary);
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-text-secondary);
+        }
+        
+        /* Notification styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--color-success);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            z-index: 1001;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.error {
+            background: var(--color-error);
+        }
+        
+        .notification.warning {
+            background: var(--color-warning);
+        }
+        
+        /* Department hierarchy */
+        .dept-tree {
+            border-left: 2px solid var(--color-border);
+            margin-left: 12px;
+            padding-left: 16px;
+        }
+        
+        .dept-node {
+            margin-bottom: 12px;
+            position: relative;
+        }
+        
+        .dept-node::before {
+            content: '';
+            position: absolute;
+            left: -16px;
+            top: 10px;
+            width: 12px;
+            height: 2px;
+            background: var(--color-border);
+        }
+        
+        .dept-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--color-surface);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .dept-header:hover {
+            background: var(--color-primary-50);
+        }
+        
+        .dept-toggle {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--color-primary-100);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: var(--color-primary-700);
+            cursor: pointer;
+        }
+    </style>
+<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fegovpro366174back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
+</head>
+<body class="bg-background min-h-screen font-inter">
+    <!-- Custom Cursor -->
+    <div class="custom-cursor"></div>
+    
+    <!-- Notification Toast -->
+    <div id="notification" class="notification">
+        <span id="notificationText"></span>
+    </div>
+    
+    <!-- Header -->
+    <header class="bg-surface border-b border-border sticky top-0 z-50 fade-in">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo and Title -->
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center justify-center w-10 h-10 bg-primary-100 rounded-full">
+                        <i class="fas fa-building text-primary-600"></i>
+                    </div>
+                    <div>
+                        <h1 style="width: 150px;" class="text-xl font-bold text-text-primary">e-GovPro360</h1>
+                    </div>
+                </div>
+                
+                <!-- Navigation -->
+                <nav class="hidden md:flex items-center gap-6">
+                    <a href="admin_dashboard.html" style="margin-left: 30px" class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </a>
+                    <a href="user_management.html"  style="margin-left: 30px, "  class="text-primary font-medium border-b-2 border-primary pb-1">
+                        <i class="fas fa-users-cog mr-2"></i>User Management
+                    </a>
+                     <a href="admin_project.html"  style="margin-left: 30px, width: 120px;"  class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-users-cog mr-2"></i>Project Management
+                    </a>
+                    <a href="feedback_recognition.html"  style="margin-left: 30px, width: 120px;"  class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-award mr-2"></i>Feedback
+                    </a>
+                    <a href="settings.html"  style="margin-left: 30px"  class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-cog mr-2"></i>Settings
+                    </a>
+                </nav>
+                
+                <!-- User Actions -->
+                <div class="flex items-center gap-4">
+                    <button class="relative p-2 text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-bell text-lg"></i>
+                        <span class="absolute -top-1 -right-1 w-5 h-5 bg-error text-white text-xs rounded-full flex items-center justify-center">2</span>
+                    </button>
+                    
+                    <div class="flex items-center gap-3">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=150&h=150&auto=format&fit=crop&ixlib=rb-4.0.3" alt="Admin Profile" class="w-8 h-8 rounded-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1584824486509-112e4181ff6b?q=80&w=150&h=150&auto=format&fit=crop&ixlib=rb-4.0.3'; this.onerror=null;" />
+                        <div class="hidden sm:block">
+                            <p class="text-sm font-medium text-text-primary">Admin User</p>
+                            <p class="text-xs text-text-secondary">Administrator</p>
+                        </div>
+                        <a href="login.html" class="text-text-secondary hover:text-error transition-colors">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Header -->
+        <div class="mb-8 slide-up">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h2 class="text-3xl font-bold text-text-primary">User Management</h2>
+                    <p class="text-text-secondary mt-1">Create, manage, and organize users within the productivity system</p>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="flex gap-3">
+                    <button onclick="openCreateUserModal()" class="bg-primary hover:bg-primary-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center gap-2">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Create User</span>
+                    </button>
+                    <button onclick="openBulkImportModal()" class="bg-accent hover:bg-accent-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center gap-2">
+                        <i class="fas fa-upload"></i>
+                        <span>Bulk Import</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Search and Filters -->
+        <div class="mb-8 slide-up" style="animation-delay: 0.1s;">
+            <div class="bg-surface rounded-xl p-6 border border-border">
+                <div class="flex flex-col md:flex-row gap-4 items-center">
+                    <!-- Search Bar -->
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" class="search-input" placeholder="Search by name, ID, or email..." oninput="filterUsers()" />
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                    
+                    <!-- Filters -->
+                    <div class="flex gap-3">
+                        <select id="departmentFilter" class="form-select" onchange="filterUsers()">
+                            <option value>All Departments</option>
+                            <option value="IT">IT Department</option>
+                            <option value="HR">HR Department</option>
+                            <option value="Finance">Finance Department</option>
+                            <option value="Operations">Operations</option>
+                            <option value="Administration">Administration</option>
+                        </select>
+                        
+                        <select id="roleFilter" class="form-select" onchange="filterUsers()">
+                            <option value>All Roles</option>
+                            <option value="admin">Administrator</option>
+                            <option value="manager">Manager</option>
+                            <option value="employee">Employee</option>
+                            <option value="intern">Intern</option>
+                        </select>
+                        
+                        <select id="statusFilter" class="form-select" onchange="filterUsers()">
+                            <option value>All Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                        
+                        <button onclick="resetFilters()" class="px-4 py-2 bg-secondary-100 text-secondary-700 rounded-lg hover:bg-secondary-200 transition-colors">
+                            <i class="fas fa-times mr-2"></i>Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- User Directory -->
+            <div class="lg:col-span-3 slide-up" style="animation-delay: 0.2s;">
+                <div class="bg-surface rounded-xl p-6 border border-border">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-semibold text-text-primary">User Directory</h3>
+                        <div class="flex items-center gap-4">
+                            <span class="text-sm text-text-secondary">Total: <strong id="userCount">24</strong> users</span>
+                            <div class="flex gap-2">
+                                <button onclick="setViewMode('grid')" class="p-2 text-text-secondary hover:text-primary transition-colors" id="gridViewBtn">
+                                    <i class="fas fa-th-large"></i>
+                                </button>
+                                <button onclick="setViewMode('list')" class="p-2 text-primary" id="listViewBtn">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- User Grid/List -->
+                    <div id="userDirectory" class="space-y-4">
+                        <!-- Users will be populated by JavaScript -->
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="flex items-center justify-between mt-8">
+                        <div class="text-sm text-text-secondary">
+                            Showing <span id="showingStart">1</span>-<span id="showingEnd">10</span> of <span id="totalUsers">24</span> users
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="previousPage()" class="px-4 py-2 border border-border rounded-lg hover:bg-secondary-50 transition-colors" id="prevBtn">
+                                <i class="fas fa-chevron-left mr-2"></i>Previous
+                            </button>
+                            <button onclick="nextPage()" class="px-4 py-2 border border-border rounded-lg hover:bg-secondary-50 transition-colors" id="nextBtn">
+                                Next<i class="fas fa-chevron-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="space-y-6 slide-up" style="animation-delay: 0.3s;">
+                <!-- Department Hierarchy -->
+                <div class="bg-surface rounded-xl p-6 border border-border">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+                        <i class="fas fa-sitemap text-primary"></i>
+                        Department Structure
+                    </h3>
+                    
+                    <div id="departmentTree" class="dept-tree">
+                        <!-- Department tree will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Quick Stats -->
+                <div class="bg-surface rounded-xl p-6 border border-border">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4">Quick Statistics</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-text-secondary">Active Users</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg font-bold text-success">18</span>
+                                <div class="w-2 h-2 bg-success rounded-full"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-text-secondary">Pending Approvals</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg font-bold text-warning">4</span>
+                                <div class="w-2 h-2 bg-warning rounded-full"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-text-secondary">Inactive Users</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg font-bold text-error">2</span>
+                                <div class="w-2 h-2 bg-error rounded-full"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-text-secondary">Total Departments</span>
+                            <span class="text-lg font-bold text-text-primary">5</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Create User Modal -->
+    <div id="createUserModal" class="modal">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-semibold text-text-primary">Create New User</h3>
+                <button onclick="closeModal('createUserModal')" class="text-text-secondary hover:text-text-primary">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="createUserForm" class="space-y-6">
+                <!-- Basic Information -->
+                <div>
+                    <h4 class="font-semibold text-text-primary mb-4">Basic Information</h4>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label class="form-label">Full Name *</label>
+                            <input type="text" name="fullName" class="form-input" required />
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Employee ID *</label>
+                            <input type="text" name="employeeId" class="form-input" placeholder="EMP001" required />
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Email Address *</label>
+                            <input type="email" name="email" class="form-input" required />
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" name="phone" class="form-input" />
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Role and Department -->
+                <div>
+                    <h4 class="font-semibold text-text-primary mb-4">Role Assignment</h4>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label class="form-label">Department *</label>
+                            <select name="department" class="form-select" required>
+                                <option value>Select Department</option>
+                                <option value="IT">IT Department</option>
+                                <option value="HR">HR Department</option>
+                                <option value="Finance">Finance Department</option>
+                                <option value="Operations">Operations</option>
+                                <option value="Administration">Administration</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Position *</label>
+                            <input type="text" name="position" class="form-input" placeholder="Software Developer" required />
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Role *</label>
+                            <select name="role" class="form-select" required>
+                                <option value>Select Role</option>
+                                <option value="admin">Administrator</option>
+                                <option value="manager">Manager</option>
+                                <option value="employee">Employee</option>
+                                <option value="intern">Intern</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Reporting Manager</label>
+                            <select name="manager" class="form-select">
+                                <option value>Select Manager</option>
+                                <option value="MGR001">Priya Sharma (HR Manager)</option>
+                                <option value="MGR002">Rajesh Kumar (IT Manager)</option>
+                                <option value="MGR003">Amit Singh (Finance Manager)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Initial KPI Configuration -->
+                <div>
+                    <h4 class="font-semibold text-text-primary mb-4">Initial KPI Configuration</h4>
+                    <div class="space-y-4">
+                        <div class="form-field">
+                            <label class="form-label">Default KPI Template</label>
+                            <select name="kpiTemplate" class="form-select">
+                                <option value>Select Template</option>
+                                <option value="developer">Software Developer KPIs</option>
+                                <option value="manager">Manager KPIs</option>
+                                <option value="analyst">Business Analyst KPIs</option>
+                                <option value="support">Support Specialist KPIs</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Performance Target (%)</label>
+                            <input type="range" name="performanceTarget" min="60" max="100" value="80" class="w-full" oninput="updateTargetDisplay(this.value)" />
+                            <div class="flex justify-between text-xs text-text-secondary mt-1">
+                                <span>60%</span>
+                                <span id="targetDisplay" class="font-medium text-primary">80%</span>
+                                <span>100%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4 pt-4 border-t border-border">
+                    <button type="submit" class="flex-1 bg-primary hover:bg-primary-700 text-white py-3 px-4 rounded-lg transition-colors">
+                        <i class="fas fa-user-plus mr-2"></i>Create User
+                    </button>
+                    <button type="button" onclick="closeModal('createUserModal')" class="flex-1 bg-secondary-100 hover:bg-secondary-200 text-secondary-700 py-3 px-4 rounded-lg transition-colors">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Bulk Import Modal -->
+    <div id="bulkImportModal" class="modal">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-semibold text-text-primary">Bulk Import Users</h3>
+                <button onclick="closeModal('bulkImportModal')" class="text-text-secondary hover:text-text-primary">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-6">
+                <!-- File Upload -->
+                <div>
+                    <label class="form-label mb-4 block">Upload CSV File</label>
+                    <div class="drag-drop-area" onclick="document.getElementById('csvFile').click()">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-text-secondary mb-4"></i>
+                        <p class="text-text-primary font-medium">Click to browse or drag and drop CSV file</p>
+                        <p class="text-sm text-text-secondary mt-2">Maximum file size: 10MB</p>
+                        <input type="file" id="csvFile" accept=".csv" hidden onchange="handleFileSelect(this)" />
+                    </div>
+                    <div id="fileInfo" class="mt-4 hidden"></div>
+                </div>
+                
+                <!-- Import Options -->
+                <div>
+                    <h4 class="font-semibold text-text-primary mb-4">Import Options</h4>
+                    <div class="space-y-3">
+                        <label class="flex items-center gap-3">
+                            <input type="checkbox" checked class="w-4 h-4 text-primary border-border rounded" />
+                            <span class="text-sm text-text-secondary">Skip duplicate employee IDs</span>
+                        </label>
+                        <label class="flex items-center gap-3">
+                            <input type="checkbox" checked class="w-4 h-4 text-primary border-border rounded" />
+                            <span class="text-sm text-text-secondary">Send welcome emails to new users</span>
+                        </label>
+                        <label class="flex items-center gap-3">
+                            <input type="checkbox" class="w-4 h-4 text-primary border-border rounded" />
+                            <span class="text-sm text-text-secondary">Auto-assign to default KPI template</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Sample CSV Format -->
+                <div class="bg-secondary-50 rounded-lg p-4">
+                    <h5 class="font-medium text-text-primary mb-2">Required CSV Format</h5>
+                    <div class="text-xs font-mono text-text-secondary">
+                        fullName,employeeId,email,department,position,role<br />
+                        John Doe,EMP025,john@gov.in,IT,Developer,employee<br />
+                        Jane Smith,EMP026,jane@gov.in,HR,Manager,manager
+                    </div>
+                    <button onclick="downloadSampleCSV()" class="mt-3 text-primary hover:text-primary-700 text-sm font-medium">
+                        <i class="fas fa-download mr-1"></i>Download Sample CSV
+                    </button>
+                </div>
+                
+                <div class="flex gap-4 pt-4 border-t border-border">
+                    <button onclick="processImport()" class="flex-1 bg-primary hover:bg-primary-700 text-white py-3 px-4 rounded-lg transition-colors" disabled id="importBtn">
+                        <i class="fas fa-upload mr-2"></i>Import Users
+                    </button>
+                    <button onclick="closeModal('bulkImportModal')" class="flex-1 bg-secondary-100 hover:bg-secondary-200 text-secondary-700 py-3 px-4 rounded-lg transition-colors">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Task Assignment Modal -->
+    <div id="taskAssignmentModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-semibold text-text-primary">Assign Tasks & KPIs</h3>
+                <button onclick="closeModal('taskAssignmentModal')" class="text-text-secondary hover:text-text-primary">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Available Tasks -->
+                <div>
+                    <h4 class="font-semibold text-text-primary mb-4">Available Tasks</h4>
+                    <div id="availableTasks" class="space-y-2">
+                        <!-- Tasks will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Assigned Tasks -->
+                <div>
+                    <h4 class="font-semibold text-text-primary mb-4">Assigned Tasks</h4>
+                    <div id="assignedTasks" class="task-dropzone">
+                        <p class="text-text-secondary text-center">Drag tasks here to assign</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex gap-4 pt-6 border-t border-border">
+                <button onclick="saveTaskAssignments()" class="flex-1 bg-primary hover:bg-primary-700 text-white py-3 px-4 rounded-lg transition-colors">
+                    <i class="fas fa-save mr-2"></i>Save Assignments
+                </button>
+                <button onclick="closeModal('taskAssignmentModal')" class="flex-1 bg-secondary-100 hover:bg-secondary-200 text-secondary-700 py-3 px-4 rounded-lg transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Custom cursor functionality
+        const cursor = document.querySelector('.custom-cursor');
+        let mouseX = 0;
+        let mouseY = 0;
+        let cursorX = 0;
+        let cursorY = 0;
+        
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+        
+        function animateCursor() {
+            cursorX += (mouseX - cursorX) * 0.1;
+            cursorY += (mouseY - cursorY) * 0.1;
+            cursor.style.left = cursorX + 'px';
+            cursor.style.top = cursorY + 'px';
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+        
+        // Cursor hover effects
+        document.querySelectorAll('button, a, input, select, .user-card, .task-item').forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+        
+        document.addEventListener('mousedown', () => cursor.classList.add('click'));
+        document.addEventListener('mouseup', () => cursor.classList.remove('click'));
+        
+        // Mock user data
+        const users = [
+            { id: 'EMP001', name: 'Rajesh Kumar', email: 'rajesh@gov.in', department: 'IT', position: 'Senior Developer', role: 'employee', status: 'active', phone: '+91 9876543210', manager: 'MGR002', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150' },
+            { id: 'EMP002', name: 'Priya Sharma', email: 'priya@gov.in', department: 'HR', position: 'HR Manager', role: 'manager', status: 'active', phone: '+91 9876543211', manager: null, avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150' },
+            { id: 'EMP003', name: 'Amit Singh', email: 'amit@gov.in', department: 'Finance', position: 'Financial Analyst', role: 'employee', status: 'active', phone: '+91 9876543212', manager: 'MGR003', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150' },
+            { id: 'EMP004', name: 'Sunita Patel', email: 'sunita@gov.in', department: 'Operations', position: 'Operations Manager', role: 'manager', status: 'active', phone: '+91 9876543213', manager: null, avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150' },
+            { id: 'EMP005', name: 'Vikram Gupta', email: 'vikram@gov.in', department: 'IT', position: 'System Admin', role: 'employee', status: 'active', phone: '+91 9876543214', manager: 'MGR002', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150' },
+            { id: 'EMP006', name: 'Meera Joshi', email: 'meera@gov.in', department: 'HR', position: 'Recruiter', role: 'employee', status: 'pending', phone: '+91 9876543215', manager: 'EMP002', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150' },
+            { id: 'EMP007', name: 'Arjun Reddy', email: 'arjun@gov.in', department: 'Finance', position: 'Accountant', role: 'employee', status: 'active', phone: '+91 9876543216', manager: 'MGR003', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150' },
+            { id: 'EMP008', name: 'Kavya Nair', email: 'kavya@gov.in', department: 'Operations', position: 'Project Coordinator', role: 'employee', status: 'active', phone: '+91 9876543217', manager: 'EMP004', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150' },
+            { id: 'EMP009', name: 'Rohit Mehta', email: 'rohit@gov.in', department: 'IT', position: 'Frontend Developer', role: 'employee', status: 'inactive', phone: '+91 9876543218', manager: 'MGR002', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150' },
+            { id: 'EMP010', name: 'Anita Desai', email: 'anita@gov.in', department: 'HR', position: 'Training Specialist', role: 'employee', status: 'active', phone: '+91 9876543219', manager: 'EMP002', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150' },
+        ];
+        
+        // Mock available tasks
+        const availableTasks = [
+            { id: 'TSK001', title: 'Database Optimization', description: 'Optimize database queries for better performance', priority: 'high' },
+            { id: 'TSK002', title: 'User Interface Update', description: 'Update dashboard UI components', priority: 'medium' },
+            { id: 'TSK003', title: 'Security Audit', description: 'Conduct comprehensive security audit', priority: 'high' },
+            { id: 'TSK004', title: 'Documentation Review', description: 'Review and update technical documentation', priority: 'low' },
+            { id: 'TSK005', title: 'Performance Testing', description: 'Conduct load testing on critical systems', priority: 'medium' },
+            { id: 'TSK006', title: 'User Training', description: 'Conduct training sessions for new features', priority: 'medium' },
+        ];
+        
+        // State management
+        let currentPage = 1;
+        let usersPerPage = 10;
+        let filteredUsers = [...users];
+        let viewMode = 'list';
+        let selectedUsers = new Set();
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            renderUsers();
+            renderDepartmentTree();
+            setupEventListeners();
+        });
+        
+        // Render users
+        function renderUsers() {
+            const directory = document.getElementById('userDirectory');
+            const start = (currentPage - 1) * usersPerPage;
+            const end = start + usersPerPage;
+            const pageUsers = filteredUsers.slice(start, end);
+            
+            if (viewMode === 'grid') {
+                directory.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4';
+                directory.innerHTML = pageUsers.map(user => `
+                    <div class="user-card ${selectedUsers.has(user.id) ? 'selected' : ''}" onclick="selectUser('${user.id}')">
+                        <div class="flex items-center gap-3 mb-4">
+                            <img src="${user.avatar}" alt="${user.name}" class="w-12 h-12 rounded-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1584824486509-112e4181ff6b?w=150'; this.onerror=null;">
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-text-primary">${user.name}</h4>
+                                <p class="text-sm text-text-secondary">${user.id}</p>
+                            </div>
+                            <div class="status-badge status-${user.status}">
+                                <i class="fas fa-circle w-2 h-2"></i>
+                                ${user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                            </div>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-text-secondary">Department:</span>
+                                <span class="font-medium text-text-primary">${user.department}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-text-secondary">Role:</span>
+                                <span class="font-medium text-text-primary capitalize">${user.role}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-text-secondary">Email:</span>
+                                <span class="font-medium text-text-primary text-xs">${user.email}</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 mt-4 pt-4 border-t border-border">
+                            <button onclick="event.stopPropagation(); editUser('${user.id}')" class="flex-1 text-xs bg-primary-100 text-primary hover:bg-primary-200 py-2 px-3 rounded transition-colors">
+                                <i class="fas fa-edit mr-1"></i>Edit
+                            </button>
+                            <button onclick="event.stopPropagation(); assignTasks('${user.id}')" class="flex-1 text-xs bg-accent-100 text-accent hover:bg-accent-200 py-2 px-3 rounded transition-colors">
+                                <i class="fas fa-tasks mr-1"></i>Tasks
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                directory.className = 'space-y-4';
+                directory.innerHTML = pageUsers.map(user => `
+                    <div class="user-card ${selectedUsers.has(user.id) ? 'selected' : ''}" onclick="selectUser('${user.id}')">
+                        <div class="flex items-center gap-4">
+                            <input type="checkbox" ${selectedUsers.has(user.id) ? 'checked' : ''} onclick="event.stopPropagation(); toggleUserSelection('${user.id}')" class="w-4 h-4 text-primary border-border rounded" />
+                            <img src="${user.avatar}" alt="${user.name}" class="w-12 h-12 rounded-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1584824486509-112e4181ff6b?w=150'; this.onerror=null;">
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="font-semibold text-text-primary">${user.name}</h4>
+                                        <p class="text-sm text-text-secondary">${user.id} • ${user.position}</p>
+                                    </div>
+                                    <div class="status-badge status-${user.status}">
+                                        <i class="fas fa-circle w-2 h-2"></i>
+                                        ${user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-6 mt-2 text-sm text-text-secondary">
+                                    <span><i class="fas fa-building mr-1"></i>${user.department}</span>
+                                    <span><i class="fas fa-user-tag mr-1"></i>${user.role.charAt(0).toUpperCase() + user.role.slice(1)}</span>
+                                    <span><i class="fas fa-envelope mr-1"></i>${user.email}</span>
+                                    <span><i class="fas fa-phone mr-1"></i>${user.phone}</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="event.stopPropagation(); editUser('${user.id}')" class="p-2 text-primary hover:bg-primary-50 rounded transition-colors">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="event.stopPropagation(); assignTasks('${user.id}')" class="p-2 text-accent hover:bg-accent-50 rounded transition-colors">
+                                    <i class="fas fa-tasks"></i>
+                                </button>
+                                <button onclick="event.stopPropagation(); viewUserDetails('${user.id}')" class="p-2 text-text-secondary hover:bg-secondary-50 rounded transition-colors">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            updatePagination();
+        }
+        
+        // Render department tree
+        function renderDepartmentTree() {
+            const tree = document.getElementById('departmentTree');
+            const departments = {
+                'IT': { count: 3, head: 'Rajesh Kumar' },
+                'HR': { count: 3, head: 'Priya Sharma' },
+                'Finance': { count: 2, head: 'Amit Singh' },
+                'Operations': { count: 2, head: 'Sunita Patel' },
+                'Administration': { count: 1, head: 'Admin User' }
+            };
+            
+            tree.innerHTML = Object.entries(departments).map(([dept, info]) => `
+                <div class="dept-node">
+                    <div class="dept-header" onclick="filterByDepartment('${dept}')">
+                        <div class="dept-toggle">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h5 class="font-medium text-text-primary">${dept}</h5>
+                            <p class="text-xs text-text-secondary">${info.count} employees • Head: ${info.head}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Filter functions
+        function filterUsers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const departmentFilter = document.getElementById('departmentFilter').value;
+            const roleFilter = document.getElementById('roleFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            filteredUsers = users.filter(user => {
+                const matchesSearch = user.name.toLowerCase().includes(searchTerm) || 
+                                    user.id.toLowerCase().includes(searchTerm) ||
+                                    user.email.toLowerCase().includes(searchTerm);
+                const matchesDepartment = !departmentFilter || user.department === departmentFilter;
+                const matchesRole = !roleFilter || user.role === roleFilter;
+                const matchesStatus = !statusFilter || user.status === statusFilter;
+                
+                return matchesSearch && matchesDepartment && matchesRole && matchesStatus;
+            });
+            
+            currentPage = 1;
+            renderUsers();
+            updateStats();
+        }
+        
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('departmentFilter').value = '';
+            document.getElementById('roleFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            filteredUsers = [...users];
+            currentPage = 1;
+            renderUsers();
+            updateStats();
+        }
+        
+        function filterByDepartment(dept) {
+            document.getElementById('departmentFilter').value = dept;
+            filterUsers();
+        }
+        
+        // View mode functions
+        function setViewMode(mode) {
+            viewMode = mode;
+            document.getElementById('gridViewBtn').className = mode === 'grid' ? 'p-2 text-primary' : 'p-2 text-text-secondary hover:text-primary transition-colors';
+            document.getElementById('listViewBtn').className = mode === 'list' ? 'p-2 text-primary' : 'p-2 text-text-secondary hover:text-primary transition-colors';
+            renderUsers();
+        }
+        
+        // Selection functions
+        function selectUser(userId) {
+            if (selectedUsers.has(userId)) {
+                selectedUsers.delete(userId);
+            } else {
+                selectedUsers.add(userId);
+            }
+            renderUsers();
+        }
+        
+        function toggleUserSelection(userId) {
+            if (selectedUsers.has(userId)) {
+                selectedUsers.delete(userId);
+            } else {
+                selectedUsers.add(userId);
+            }
+        }
+        
+        // Pagination
+        function updatePagination() {
+            const total = filteredUsers.length;
+            const start = (currentPage - 1) * usersPerPage + 1;
+            const end = Math.min(currentPage * usersPerPage, total);
+            
+            document.getElementById('userCount').textContent = total;
+            document.getElementById('showingStart').textContent = start;
+            document.getElementById('showingEnd').textContent = end;
+            document.getElementById('totalUsers').textContent = total;
+            
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = end >= total;
+        }
+        
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderUsers();
+            }
+        }
+        
+        function nextPage() {
+            if (currentPage * usersPerPage < filteredUsers.length) {
+                currentPage++;
+                renderUsers();
+            }
+        }
+        
+        // Modal functions
+        function openCreateUserModal() {
+            document.getElementById('createUserModal').classList.add('active');
+        }
+        
+        function openBulkImportModal() {
+            document.getElementById('bulkImportModal').classList.add('active');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+        
+        // Form functions
+        function updateTargetDisplay(value) {
+            document.getElementById('targetDisplay').textContent = value + '%';
+        }
+        
+        function handleFileSelect(input) {
+            const file = input.files[0];
+            if (file) {
+                const fileInfo = document.getElementById('fileInfo');
+                fileInfo.innerHTML = `
+                    <div class="flex items-center gap-3 p-3 bg-primary-50 border border-primary-200 rounded-lg">
+                        <i class="fas fa-file-csv text-primary"></i>
+                        <div class="flex-1">
+                            <p class="font-medium text-text-primary">${file.name}</p>
+                            <p class="text-sm text-text-secondary">${(file.size / 1024).toFixed(1)} KB</p>
+                        </div>
+                        <button onclick="clearFile()" class="text-text-secondary hover:text-error">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                fileInfo.classList.remove('hidden');
+                document.getElementById('importBtn').disabled = false;
+            }
+        }
+        
+        function clearFile() {
+            document.getElementById('csvFile').value = '';
+            document.getElementById('fileInfo').classList.add('hidden');
+            document.getElementById('importBtn').disabled = true;
+        }
+        
+        function downloadSampleCSV() {
+            const csvContent = `fullName,employeeId,email,department,position,role
+John Doe,EMP025,john@gov.in,IT,Software Developer,employee
+Jane Smith,EMP026,jane@gov.in,HR,HR Manager,manager
+Bob Johnson,EMP027,bob@gov.in,Finance,Financial Analyst,employee`;
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'user_import_sample.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        // User actions
+        function editUser(userId) {
+            const user = users.find(u => u.id === userId);
+            showNotification(`Opening edit form for ${user.name}`, 'info');
+        }
+        
+        function assignTasks(userId) {
+            const user = users.find(u => u.id === userId);
+            document.getElementById('taskAssignmentModal').classList.add('active');
+            
+            // Populate available tasks
+            const availableTasksDiv = document.getElementById('availableTasks');
+            availableTasksDiv.innerHTML = availableTasks.map(task => `
+                <div class="task-item" draggable="true" ondragstart="drag(event)" data-task-id="${task.id}">
+                    <div class="flex items-center justify-between mb-2">
+                        <h5 class="font-medium text-text-primary">${task.title}</h5>
+                        <span class="text-xs px-2 py-1 rounded-full ${
+                            task.priority === 'high' ? 'bg-error-100 text-error-700' :
+                            task.priority === 'medium' ? 'bg-warning-100 text-warning-700' :
+                            'bg-success-100 text-success-700'
+                        }">${task.priority}</span>
+                    </div>
+                    <p class="text-sm text-text-secondary">${task.description}</p>
+                </div>
+            `).join('');
+        }
+        
+        function viewUserDetails(userId) {
+            const user = users.find(u => u.id === userId);
+            showNotification(`Opening detailed view for ${user.name}`, 'info');
+        }
+        
+        // Drag and drop for task assignment
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.dataset.taskId);
+            ev.target.classList.add('dragging');
+        }
+        
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+        
+        function drop(ev) {
+            ev.preventDefault();
+            const taskId = ev.dataTransfer.getData("text");
+            const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
+            
+            if (ev.target.classList.contains('task-dropzone') || ev.target.closest('.task-dropzone')) {
+                const dropzone = ev.target.classList.contains('task-dropzone') ? ev.target : ev.target.closest('.task-dropzone');
+                dropzone.appendChild(taskElement);
+                taskElement.classList.remove('dragging');
+                
+                // Clear the placeholder text
+                const placeholder = dropzone.querySelector('p');
+                if (placeholder && placeholder.textContent === 'Drag tasks here to assign') {
+                    placeholder.remove();
+                }
+            }
+        }
+        
+        function saveTaskAssignments() {
+            const assignedTasks = document.querySelectorAll('#assignedTasks .task-item');
+            if (assignedTasks.length > 0) {
+                showNotification(`Successfully assigned ${assignedTasks.length} tasks`, 'success');
+                closeModal('taskAssignmentModal');
+            } else {
+                showNotification('No tasks assigned', 'warning');
+            }
+        }
+        
+        // Form submissions
+        document.getElementById('createUserForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const newUser = {
+                id: 'EMP' + String(users.length + 1).padStart(3, '0'),
+                name: formData.get('fullName'),
+                email: formData.get('email'),
+                department: formData.get('department'),
+                position: formData.get('position'),
+                role: formData.get('role'),
+                status: 'active',
+                phone: formData.get('phone') || '',
+                manager: formData.get('manager') || null,
+                avatar: 'https://images.unsplash.com/photo-1584824486509-112e4181ff6b?w=150'
+            };
+            
+            users.push(newUser);
+            filteredUsers = [...users];
+            renderUsers();
+            closeModal('createUserModal');
+            this.reset();
+            showNotification(`User ${newUser.name} created successfully!`, 'success');
+        });
+        
+        function processImport() {
+            // Simulate CSV processing
+            const newUsers = [
+                { id: 'EMP025', name: 'John Doe', email: 'john@gov.in', department: 'IT', position: 'Software Developer', role: 'employee', status: 'active', phone: '+91 9876543220', manager: 'MGR002', avatar: 'https://images.unsplash.com/photo-1584824486509-112e4181ff6b?w=150' },
+                { id: 'EMP026', name: 'Jane Smith', email: 'jane@gov.in', department: 'HR', position: 'HR Manager', role: 'manager', status: 'active', phone: '+91 9876543221', manager: null, avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150' }
+            ];
+            
+            users.push(...newUsers);
+            filteredUsers = [...users];
+            renderUsers();
+            closeModal('bulkImportModal');
+            showNotification(`Successfully imported ${newUsers.length} users`, 'success');
+        }
+        
+        // Update statistics
+        function updateStats() {
+            const activeCount = filteredUsers.filter(u => u.status === 'active').length;
+            const pendingCount = filteredUsers.filter(u => u.status === 'pending').length;
+            const inactiveCount = filteredUsers.filter(u => u.status === 'inactive').length;
+            
+            // Update sidebar stats if needed
+        }
+        
+        // Event listeners
+        function setupEventListeners() {
+            // Drag and drop for task assignment modal
+            document.getElementById('assignedTasks').addEventListener('dragover', allowDrop);
+            document.getElementById('assignedTasks').addEventListener('drop', drop);
+            
+            // Close modals when clicking outside
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('modal')) {
+                    e.target.classList.remove('active');
+                }
+            });
+        }
+        
+        // Notification system
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            
+            notificationText.textContent = message;
+            notification.className = `notification ${type === 'error' ? 'error' : type === 'warning' ? 'warning' : ''} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+<script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+
+    <script src="https://cdn.botpress.cloud/webchat/v3.3/inject.js"></script>
+<script src="https://files.bpcontent.cloud/2025/10/01/06/20251001065837-31L1AP49.js" defer></script>
+    
+</body>
+</html>

@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employee Dashboard - e-GovPro360</title>
+    <link rel="stylesheet" href="../css/main.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom cursor styles */
+        body {
+            cursor: none;
+        }
+        
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: var(--color-primary);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: all 0.1s ease;
+            mix-blend-mode: difference;
+        }
+        
+        .custom-cursor.hover {
+            width: 40px;
+            height: 40px;
+            background: var(--color-accent);
+        }
+        
+        .custom-cursor.click {
+            width: 15px;
+            height: 15px;
+        }
+        
+        /* Badge glow animations */
+        .badge-glow {
+            animation: badgeGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes badgeGlow {
+            0% {
+                box-shadow: 0 0 5px var(--color-accent-300);
+            }
+            100% {
+                box-shadow: 0 0 20px var(--color-accent-400), 0 0 30px var(--color-accent-300);
+            }
+        }
+        
+        /* Progress bar animations */
+        .progress-bar {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-primary-400));
+            border-radius: inherit;
+            transition: width 2s ease-out;
+            position: relative;
+        }
+        
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        /* Card hover animations */
+        .card-hover {
+            transition: all 0.3s var(--ease-out);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        /* Modal animations */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--color-success);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            z-index: 1001;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-out;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        /* Star rating animation */
+        .star-rating {
+            display: flex;
+            gap: 2px;
+        }
+        
+        .star {
+            color: var(--color-warning);
+            transition: all 0.2s ease;
+        }
+        
+        .star.animate {
+            animation: starPulse 0.6s ease-out;
+        }
+        
+        @keyframes starPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Scrollbar styling */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: var(--color-secondary-100);
+            border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: var(--color-secondary-300);
+            border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: var(--color-secondary-400);
+        }
+        
+        /* Page animations */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        .slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Role-based restrictions */
+        .admin-only {
+            display: none !important;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .desktop-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: static;
+                width: 100%;
+                margin-top: 24px;
+            }
+        }
+
+        html, body {
+  height: 100%;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+/* Ensure canvas stays fixed in size */
+canvas {
+  max-width: 100%;
+  height: auto !important;
+}
+
+/* Define shimmer animation properly */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Prevent modal and toast from expanding page */
+.modal, .toast {
+  position: fixed !important;
+}
+
+/* Stop continuous growth due to flex/grid auto height */
+main, section {
+  min-height: auto;
+}
+
+    </style>
+<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fegovpro366174back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
+</head>
+<body class="bg-background min-h-screen font-inter">
+    <!-- Custom Cursor -->
+    <div class="custom-cursor"></div>
+    
+    <!-- Navigation Header -->
+    <header class="bg-surface border-b border-border shadow-sm sticky top-0 z-50 fade-in">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-building text-primary-600"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-text-primary">e-GovPro360</h1>
+                        <p class="text-xs text-text-secondary">Employee Dashboard</p>
+                    </div>
+                </div>
+                
+                <!-- Navigation Links -->
+                <nav class="hidden md:flex items-center gap-6">
+                    <a href="employee_dashboard.html" class="text-primary font-medium border-b-2 border-primary pb-1">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </a>
+                     <a href="user_task.html" class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-award mr-2"></i>My Task
+                    </a>
+                    <a href="attendance_employee.html" class="text-primary font-medium border-b-2 border-primary pb-1">
+                        <i class="fas fa-calendar-check mr-2"></i>Attendance
+                    </a>
+                    <a href="feedback_recognition.html" class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-award mr-2"></i>Recognition
+                    </a>
+                    <a href="settings.html" class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-cog mr-2"></i>Settings
+                    </a>
+                </nav>
+                
+                <!-- User Menu -->
+                <div class="flex items-center gap-4">
+                    <button class="relative p-2 text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-bell"></i>
+                        <span class="absolute -top-1 -right-1 w-3 h-3 bg-error rounded-full"></span>
+                    </button>
+                    <div class="flex items-center gap-3">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&h=150&auto=format&fit=crop&ixlib=rb-4.0.3" alt="Profile" class="w-8 h-8 rounded-full object-cover" onerror="this.src='https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop'; this.onerror=null;" />
+                        <a href="login.html" class="text-text-secondary hover:text-primary transition-colors">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 desktop-grid">
+            <!-- Main Dashboard Content -->
+            <div class="lg:col-span-3 space-y-8">
+                <!-- Profile Card -->
+                <section class="bg-surface rounded-2xl shadow-md p-6 border border-border slide-up">
+                    <div class="flex flex-col md:flex-row items-start md:items-center gap-6">
+                        <div class="flex items-center gap-4">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=120&h=120&auto=format&fit=crop&ixlib=rb-4.0.3" alt="Employee Profile" class="w-20 h-20 rounded-full object-cover border-4 border-primary-100" onerror="this.src='https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=120&h=120&fit=crop'; this.onerror=null;" />
+                            <div>
+                                <h2 class="text-2xl font-bold text-text-primary">Rajesh Kumar</h2>
+                                <p class="text-text-secondary">Senior Administrative Officer</p>
+                                <p class="text-sm text-text-secondary">Employee ID: EMP001</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Productivity Score -->
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-primary mb-1">87%</div>
+                                <p class="text-sm text-text-secondary">Productivity Score</p>
+                                <div class="w-full bg-secondary-200 rounded-full h-2 mt-2">
+                                    <div class="progress-fill bg-primary h-2 rounded-full" style="width: 87%"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Achievement Badges -->
+                            <div class="text-center">
+                                <p class="text-sm text-text-secondary mb-3">Recent Achievements</p>
+                                <div class="flex justify-center gap-2">
+                                    <div class="w-10 h-10 bg-accent-100 rounded-full flex items-center justify-center badge-glow">
+                                        <i class="fas fa-star text-accent-600"></i>
+                                    </div>
+                                    <div class="w-10 h-10 bg-warning-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-trophy text-warning-600"></i>
+                                    </div>
+                                    <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-medal text-primary-600"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- KPI Cards -->
+                <section class="grid grid-cols-1 md:grid-cols-3 gap-6 slide-up" style="animation-delay: 0.2s;">
+                    <div class="bg-surface rounded-xl shadow-md p-6 border border-border card-hover">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-tasks text-primary-600"></i>
+                            </div>
+                            <span class="text-2xl font-bold text-primary">24/30</span>
+                        </div>
+                        <h3 class="font-semibold text-text-primary mb-2">Tasks Completed</h3>
+                        <div class="w-full bg-secondary-200 rounded-full h-3 mb-2">
+                            <div class="progress-fill bg-primary h-3 rounded-full" style="width: 80%"></div>
+                        </div>
+                        <p class="text-sm text-text-secondary">80% completion rate</p>
+                    </div>
+                    
+                    <div class="bg-surface rounded-xl shadow-md p-6 border border-border card-hover">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-accent-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-clock text-accent-600"></i>
+                            </div>
+                            <span class="text-2xl font-bold text-accent">95%</span>
+                        </div>
+                        <h3 class="font-semibold text-text-primary mb-2">On-Time Delivery</h3>
+                        <div class="w-full bg-secondary-200 rounded-full h-3 mb-2">
+                            <div class="progress-fill bg-accent h-3 rounded-full" style="width: 95%"></div>
+                        </div>
+                        <p class="text-sm text-text-secondary">Excellent punctuality</p>
+                    </div>
+                    
+                    <div class="bg-surface rounded-xl shadow-md p-6 border border-border card-hover">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-warning-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-chart-line text-warning-600"></i>
+                            </div>
+                            <span class="text-2xl font-bold text-warning">92%</span>
+                        </div>
+                        <h3 class="font-semibold text-text-primary mb-2">Quality Score</h3>
+                        <div class="w-full bg-secondary-200 rounded-full h-3 mb-2">
+                            <div class="progress-fill bg-warning h-3 rounded-full" style="width: 92%"></div>
+                        </div>
+                        <p class="text-sm text-text-secondary">High quality work</p>
+                    </div>
+                </section>
+                
+                <!-- Charts Section -->
+                <!-- Charts Section -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-6 slide-up" style="animation-delay: 0.4s;">
+    <!-- Weekly vs Monthly Chart -->
+    <div class="bg-surface rounded-xl shadow-md p-6 border border-border">
+        <h3 class="text-lg font-semibold text-text-primary mb-4">Productivity Trends</h3>
+        <div style="height: 300px; width: 100%;">
+            <canvas id="productivityChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- Task Distribution Chart -->
+    <div class="bg-surface rounded-xl shadow-md p-6 border border-border">
+        <h3 class="text-lg font-semibold text-text-primary mb-4">Task Distribution</h3>
+        <div style="height: 300px; width: 100%;">
+            <canvas id="taskChart"></canvas>
+        </div>
+    </div>
+</section>
+
+                
+                <!-- Task Update Section -->
+                <section class="bg-surface rounded-xl shadow-md p-6 border border-border slide-up" style="animation-delay: 0.6s;">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-semibold text-text-primary">Quick Actions</h3>
+                        <button onclick="openTaskModal()" class="bg-primary hover:bg-primary-700 text-white px-4 py-2 rounded-lg transition-colors">
+                            <i class="fas fa-plus mr-2"></i>Update Task
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <button class="p-4 border border-border rounded-lg hover:border-primary hover:bg-primary-50 transition-all text-left">
+                            <i class="fas fa-file-alt text-primary mb-2"></i>
+                            <div class="font-medium text-text-primary">Submit Report</div>
+                            <div class="text-sm text-text-secondary">Upload progress report</div>
+                        </button>
+                        
+                        <button class="p-4 border border-border rounded-lg hover:border-accent hover:bg-accent-50 transition-all text-left">
+                            <i class="fas fa-calendar-check text-accent mb-2"></i>
+                            <div class="font-medium text-text-primary">Mark Complete</div>
+                            <div class="text-sm text-text-secondary">Complete current task</div>
+                        </button>
+                        
+                        <button class="p-4 border border-border rounded-lg hover:border-warning hover:bg-warning-50 transition-all text-left">
+                            <i class="fas fa-comment text-warning mb-2"></i>
+                            <div class="font-medium text-text-primary">Request Help</div>
+                            <div class="text-sm text-text-secondary">Get assistance</div>
+                        </button>
+                    </div>
+                </section>
+                
+                <!-- History Log -->
+                <section class="bg-surface rounded-xl shadow-md border border-border slide-up" style="animation-delay: 0.8s;">
+                    <div class="p-6 border-b border-border">
+                        <h3 class="text-lg font-semibold text-text-primary">Recent Activity</h3>
+                    </div>
+                    <div class="max-h-96 overflow-y-auto custom-scrollbar">
+                        <table class="w-full">
+                            <thead class="bg-secondary-50 sticky top-0">
+                                <tr>
+                                    <th class="text-left p-4 text-sm font-medium text-text-secondary">Date</th>
+                                    <th class="text-left p-4 text-sm font-medium text-text-secondary">Task</th>
+                                    <th class="text-left p-4 text-sm font-medium text-text-secondary">Status</th>
+                                    <th class="text-left p-4 text-sm font-medium text-text-secondary">Progress</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b border-border hover:bg-secondary-50">
+                                    <td class="p-4 text-sm text-text-secondary">01/10/2025</td>
+                                    <td class="p-4 text-sm text-text-primary">Budget Review Report</td>
+                                    <td class="p-4">
+                                        <span class="px-2 py-1 bg-success-100 text-success-600 rounded-full text-xs">Approved</span>
+                                    </td>
+                                    <td class="p-4 text-sm text-text-primary">100%</td>
+                                </tr>
+                                <tr class="bg-secondary-25 border-b border-border hover:bg-secondary-50">
+                                    <td class="p-4 text-sm text-text-secondary">30/09/2025</td>
+                                    <td class="p-4 text-sm text-text-primary">Policy Documentation</td>
+                                    <td class="p-4">
+                                        <span class="px-2 py-1 bg-warning-100 text-warning-600 rounded-full text-xs">In Review</span>
+                                    </td>
+                                    <td class="p-4 text-sm text-text-primary">85%</td>
+                                </tr>
+                                <tr class="border-b border-border hover:bg-secondary-50">
+                                    <td class="p-4 text-sm text-text-secondary">29/09/2025</td>
+                                    <td class="p-4 text-sm text-text-primary">Staff Meeting Minutes</td>
+                                    <td class="p-4">
+                                        <span class="px-2 py-1 bg-success-100 text-success-600 rounded-full text-xs">Approved</span>
+                                    </td>
+                                    <td class="p-4 text-sm text-text-primary">100%</td>
+                                </tr>
+                                <tr class="bg-secondary-25 border-b border-border hover:bg-secondary-50">
+                                    <td class="p-4 text-sm text-text-secondary">28/09/2025</td>
+                                    <td class="p-4 text-sm text-text-primary">Quarterly Assessment</td>
+                                    <td class="p-4">
+                                        <span class="px-2 py-1 bg-primary-100 text-primary-600 rounded-full text-xs">In Progress</span>
+                                    </td>
+                                    <td class="p-4 text-sm text-text-primary">60%</td>
+                                </tr>
+                                <tr class="border-b border-border hover:bg-secondary-50">
+                                    <td class="p-4 text-sm text-text-secondary">27/09/2025</td>
+                                    <td class="p-4 text-sm text-text-primary">Compliance Audit</td>
+                                    <td class="p-4">
+                                        <span class="px-2 py-1 bg-success-100 text-success-600 rounded-full text-xs">Approved</span>
+                                    </td>
+                                    <td class="p-4 text-sm text-text-primary">100%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+            
+            <!-- Leaderboard Sidebar -->
+            <div class="lg:col-span-1 sidebar">
+                <div class="bg-surface rounded-xl shadow-md p-6 border border-border slide-up" style="animation-delay: 1s;">
+                    <h3 class="text-lg font-semibold text-text-primary mb-6 flex items-center gap-2">
+                        <i class="fas fa-trophy text-warning"></i>
+                        Top Performers
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-3 p-3 bg-warning-50 rounded-lg border border-warning-200">
+                            <div class="w-8 h-8 bg-warning rounded-full flex items-center justify-center text-white font-bold text-sm">1</div>
+                            <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?q=80&w=40&h=40&auto=format&fit=crop&ixlib=rb-4.0.3" alt="Top Performer" class="w-8 h-8 rounded-full object-cover" onerror="this.src='https://images.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_960_720.png'; this.onerror=null;" />
+                            <div class="flex-1">
+                                <div class="font-medium text-text-primary text-sm">Priya Sharma</div>
+                                <div class="star-rating">
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star star"></i>
+                                </div>
+                            </div>
+                            <div class="text-sm font-bold text-warning">98%</div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3 p-3 bg-secondary-50 rounded-lg">
+                            <div class="w-8 h-8 bg-secondary-400 rounded-full flex items-center justify-center text-white font-bold text-sm">2</div>
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=40&h=40&auto=format&fit=crop&ixlib=rb-4.0.3" alt="Second Place" class="w-8 h-8 rounded-full object-cover" onerror="this.src='https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop'; this.onerror=null;" />
+                            <div class="flex-1">
+                                <div class="font-medium text-text-primary text-sm">Rajesh Kumar</div>
+                                <div class="star-rating">
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star star"></i>
+                                    <i class="far fa-star star"></i>
+                                </div>
+                            </div>
+                            <div class="text-sm font-bold text-secondary-600">87%</div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3 p-3 rounded-lg">
+                            <div class="w-8 h-8 bg-secondary-300 rounded-full flex items-center justify-center text-white font-bold text-sm">3</div>
+                            <img src="https://images.pixabay.com/photo/2016/11/21/12/42/beard-1845166_960_720.jpg" alt="Third Place" class="w-8 h-8 rounded-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=40&h=40&auto=format&fit=crop&ixlib=rb-4.0.3'; this.onerror=null;" />
+                            <div class="flex-1">
+                                <div class="font-medium text-text-primary text-sm">Amit Singh</div>
+                                <div class="star-rating">
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star star"></i>
+                                    <i class="far fa-star star"></i>
+                                </div>
+                            </div>
+                            <div class="text-sm font-bold text-secondary-600">84%</div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3 p-3 rounded-lg">
+                            <div class="w-8 h-8 bg-secondary-300 rounded-full flex items-center justify-center text-white font-bold text-sm">4</div>
+                            <img src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop" alt="Fourth Place" class="w-8 h-8 rounded-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=40&h=40&auto=format&fit=crop&ixlib=rb-4.0.3'; this.onerror=null;" />
+                            <div class="flex-1">
+                                <div class="font-medium text-text-primary text-sm">Sunita Devi</div>
+                                <div class="star-rating">
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star star"></i>
+                                    <i class="far fa-star star"></i>
+                                    <i class="far fa-star star"></i>
+                                </div>
+                            </div>
+                            <div class="text-sm font-bold text-secondary-600">79%</div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3 p-3 rounded-lg">
+                            <div class="w-8 h-8 bg-secondary-300 rounded-full flex items-center justify-center text-white font-bold text-sm">5</div>
+                            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=40&h=40&auto=format&fit=crop&ixlib=rb-4.0.3" alt="Fifth Place" class="w-8 h-8 rounded-full object-cover" onerror="this.src='https://images.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'; this.onerror=null;" />
+                            <div class="flex-1">
+                                <div class="font-medium text-text-primary text-sm">Vikash Gupta</div>
+                                <div class="star-rating">
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star star"></i>
+                                    <i class="far fa-star star"></i>
+                                    <i class="far fa-star star"></i>
+                                </div>
+                            </div>
+                            <div class="text-sm font-bold text-secondary-600">76%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 pt-4 border-t border-border">
+                        <div class="text-center">
+                            <div class="text-sm text-text-secondary mb-2">Your Rank</div>
+                            <div class="text-2xl font-bold text-primary">#2</div>
+                            <div class="text-xs text-text-secondary">Keep up the great work!</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Task Update Modal -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold text-text-primary">Update Task Progress</h3>
+                <button onclick="closeTaskModal()" class="text-text-secondary hover:text-text-primary">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="taskUpdateForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">Task Title</label>
+                    <input type="text" class="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Enter task title" required />
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">Progress (%)</label>
+                    <input type="range" min="0" max="100" value="50" class="w-full" id="progressSlider" />
+                    <div class="flex justify-between text-sm text-text-secondary mt-1">
+                        <span>0%</span>
+                        <span id="progressValue">50%</span>
+                        <span>100%</span>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">Description</label>
+                    <textarea class="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" rows="4" placeholder="Describe your progress..." required></textarea>
+                </div>
+                
+                <div class="flex gap-3 pt-4">
+                    <button type="submit" class="flex-1 bg-primary hover:bg-primary-700 text-white py-3 px-4 rounded-lg transition-colors">
+                        <i class="fas fa-paper-plane mr-2"></i>Submit Update
+                    </button>
+                    <button type="button" onclick="closeTaskModal()" class="px-6 py-3 border border-border rounded-lg hover:bg-secondary-50 transition-colors">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <i class="fas fa-check-circle mr-2"></i>
+        <span id="toastMessage">Task updated successfully!</span>
+    </div>
+    
+    <script>
+        // Custom cursor functionality
+        const cursor = document.querySelector('.custom-cursor');
+        let mouseX = 0;
+        let mouseY = 0;
+        let cursorX = 0;
+        let cursorY = 0;
+        
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+        
+        function animateCursor() {
+            cursorX += (mouseX - cursorX) * 0.1;
+            cursorY += (mouseY - cursorY) * 0.1;
+            cursor.style.left = cursorX + 'px';
+            cursor.style.top = cursorY + 'px';
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+        
+        // Cursor hover effects
+        document.querySelectorAll('button, a, input, textarea, .card-hover').forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+        
+        document.addEventListener('mousedown', () => cursor.classList.add('click'));
+        document.addEventListener('mouseup', () => cursor.classList.remove('click'));
+        
+        // Initialize Charts
+        function initCharts() {
+            // FIXED: Productivity Chart now shows consistent upward trend
+            const productivityCtx = document.getElementById('productivityChart').getContext('2d');
+            new Chart(productivityCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Monthly Productivity',
+                        data: [75, 78, 82, 85, 87, 90], // FIXED: Progressive upward trend
+                        borderColor: 'rgb(37, 99, 235)',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: 'rgb(37, 99, 235)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }, {
+                        label: 'Target Performance',
+                        data: [85, 85, 85, 85, 85, 85],
+                        borderColor: 'rgb(5, 150, 105)',
+                        backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                        borderDash: [5, 5],
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y + '%';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+            
+            // Task Distribution Chart
+            const taskCtx = document.getElementById('taskChart').getContext('2d');
+            new Chart(taskCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completed', 'In Progress', 'Pending'],
+                    datasets: [{
+                        data: [24, 4, 2],
+                        backgroundColor: [
+                            'rgb(16, 185, 129)',
+                            'rgb(245, 158, 11)',
+                            'rgb(239, 68, 68)'
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += context.parsed + ' tasks';
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((context.parsed / total) * 100);
+                                    label += ' (' + percentage + '%)';
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+        
+        // Modal functions
+        function openTaskModal() {
+            document.getElementById('taskModal').classList.add('show');
+        }
+        
+        function closeTaskModal() {
+            document.getElementById('taskModal').classList.remove('show');
+        }
+        
+        // Progress slider
+        const progressSlider = document.getElementById('progressSlider');
+        const progressValue = document.getElementById('progressValue');
+        
+        if (progressSlider) {
+            progressSlider.addEventListener('input', function() {
+                progressValue.textContent = this.value + '%';
+            });
+        }
+        
+        // Form submission
+        document.getElementById('taskUpdateForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show toast notification
+            showToast('Task updated successfully!');
+            
+            // Close modal
+            closeTaskModal();
+            
+            // Reset form
+            this.reset();
+            progressValue.textContent = '50%';
+            progressSlider.value = 50;
+        });
+        
+        // Toast notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Star rating animation
+        function animateStars() {
+            const stars = document.querySelectorAll('.star');
+            stars.forEach((star, index) => {
+                setTimeout(() => {
+                    star.classList.add('animate');
+                    setTimeout(() => {
+                        star.classList.remove('animate');
+                    }, 600);
+                }, index * 100);
+            });
+        }
+        
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            
+            // Animate progress bars
+            setTimeout(() => {
+                document.querySelectorAll('.progress-fill').forEach(bar => {
+                    const width = bar.style.width;
+                    bar.style.width = '0%';
+                    setTimeout(() => {
+                        bar.style.width = width;
+                    }, 100);
+                });
+            }, 500);
+            
+            // Animate stars after a delay
+            setTimeout(animateStars, 2000);
+        });
+        
+        // Close modal when clicking outside
+        document.getElementById('taskModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeTaskModal();
+            }
+        });
+    </script>
+<script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+
+    <script src="https://cdn.botpress.cloud/webchat/v3.3/inject.js"></script>
+<script src="https://files.bpcontent.cloud/2025/10/01/06/20251001065837-31L1AP49.js" defer></script>
+    
+</body>
+</html>

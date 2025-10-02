@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Feedback Recognition - e-GovPro360</title>
+    <link rel="stylesheet" href="../css/main.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Admin-specific styles */
+        body {
+            cursor: none;
+        }
+        
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: var(--color-primary);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: all 0.1s ease;
+            mix-blend-mode: difference;
+        }
+        
+        .custom-cursor.hover {
+            width: 40px;
+            height: 40px;
+            background: var(--color-accent);
+        }
+        
+        /* Page animations */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        .slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Card hover effects */
+        .hover-lift:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        /* Chart containers */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+        
+        /* Notification toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--color-success);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            z-index: 1001;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-out;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        /* Badge creation styles */
+        .badge-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin: 0 auto;
+            box-shadow: var(--shadow-md);
+        }
+        
+        /* Filter styles */
+        .filter-container {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-tag {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+        
+        .filter-tag.active {
+            background: var(--color-primary);
+            color: white;
+        }
+        
+        .filter-tag:not(.active) {
+            background: var(--color-secondary-100);
+            color: var(--color-text-secondary);
+        }
+        
+        .filter-tag:hover {
+            border-color: var(--color-primary-300);
+        }
+        
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .grid-responsive {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-container {
+                height: 250px;
+            }
+        }
+    </style>
+<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fegovpro366174back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
+</head>
+<body class="bg-background min-h-screen font-inter">
+    <!-- Custom Cursor -->
+    <div class="custom-cursor"></div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <span id="toastMessage"></span>
+    </div>
+    
+    <!-- Header -->
+    <header class="bg-surface border-b border-border sticky top-0 z-50 fade-in">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo and Title -->
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center justify-center w-10 h-10 bg-primary-100 rounded-full">
+                        <i class="fas fa-building text-primary-600"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-text-primary">e-GovPro360</h1>
+                        <p class="text-sm text-text-secondary">Admin Feedback Recognition</p>
+                    </div>
+                </div>
+                
+                <!-- Navigation -->
+                <nav class="hidden md:flex items-center gap-6">
+                   
+                    <a href="admin_dashboard.html" class="text-text-secondary hover:text-primary transition-colors">Dashboard</a>
+                    <a href="user_management.html" class="text-text-secondary hover:text-primary transition-colors">User Management</a>
+                     <a href="admin_project.html" class="text-text-secondary hover:text-primary transition-colors">Project Management</a>
+                    
+                    <a href="admin_feedback_recognition.html" class="text-primary font-medium">Feedback</a>
+                    <a href="setting.html" class="text-text-secondary hover:text-primary transition-colors">Settings</a>
+                      </nav>
+                
+                <!-- User Actions -->
+                <div class="flex items-center gap-4">
+                    <!-- Notifications -->
+                    <button class="relative p-2 text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-bell text-lg"></i>
+                        <span class="absolute -top-1 -right-1 w-5 h-5 bg-error text-white text-xs rounded-full flex items-center justify-center">3</span>
+                    </button>
+                    
+                    <!-- Profile -->
+                    <div class="flex items-center gap-3">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Admin Profile" class="w-8 h-8 rounded-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1584824486509-112e4181ff6b?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'; this.onerror=null;" />
+                        <div class="hidden sm:block">
+                            <p class="text-sm font-medium text-text-primary">Admin User</p>
+                            <p class="text-xs text-text-secondary">Administrator</p>
+                        </div>
+                        <button onclick="logout()" class="text-text-secondary hover:text-error transition-colors">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Header -->
+        <div class="mb-8 slide-up">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h2 class="text-3xl font-bold text-text-primary">Admin Feedback Recognition</h2>
+                    <p class="text-text-secondary mt-1">Manage feedback delivery and recognition oversight across all departments</p>
+                </div>
+                
+                <!-- Quick Stats -->
+                <div class="flex gap-4">
+                    <div class="bg-surface rounded-lg p-4 border border-border">
+                        <div class="text-2xl font-bold text-primary">156</div>
+                        <div class="text-sm text-text-secondary">Total Feedbacks</div>
+                    </div>
+                    <div class="bg-surface rounded-lg p-4 border border-border">
+                        <div class="text-2xl font-bold text-accent">89</div>
+                        <div class="text-sm text-text-secondary">Badges Awarded</div>
+                    </div>
+                    <div class="bg-surface rounded-lg p-4 border border-border">
+                        <div class="text-2xl font-bold text-warning">92%</div>
+                        <div class="text-sm text-text-secondary">Response Rate</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Filters and Actions -->
+        <div class="mb-8 slide-up" style="animation-delay: 0.1s;">
+            <div class="bg-surface rounded-xl p-6 border border-border">
+                <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+                    <div class="flex-1">
+                        <div class="flex flex-wrap gap-4 mb-4">
+                            <div class="filter-container">
+                                <span class="filter-tag active" onclick="filterFeedback('all')">All</span>
+                                <span class="filter-tag" onclick="filterFeedback('pending')">Pending</span>
+                                <span class="filter-tag" onclick="filterFeedback('delivered')">Delivered</span>
+                                <span class="filter-tag" onclick="filterFeedback('overdue')">Overdue</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <input type="text" id="searchFeedback" placeholder="Search feedback by employee name or department..." class="flex-1 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                            <select id="departmentFilter" class="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                <option value>All Departments</option>
+                                <option value="IT">IT Department</option>
+                                <option value="HR">HR Department</option>
+                                <option value="Finance">Finance Department</option>
+                                <option value="Operations">Operations</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <button onclick="openBulkFeedbackModal()" class="bg-primary hover:bg-primary-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+                            <i class="fas fa-paper-plane"></i>
+                            Bulk Feedback
+                        </button>
+                        <button onclick="openCreateBadgeModal()" class="bg-accent hover:bg-accent-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+                            <i class="fas fa-award"></i>
+                            Create Badge
+                        </button>
+                        <button onclick="exportReport()" class="bg-secondary hover:bg-secondary-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+                            <i class="fas fa-download"></i>
+                            Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Dashboard Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 grid-responsive">
+            <!-- Feedback Management Panel -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Feedback Analytics -->
+                <div class="bg-surface rounded-xl p-6 border border-border slide-up hover-lift transition-all duration-300" style="animation-delay: 0.2s;">
+                    <h3 class="text-xl font-semibold text-text-primary mb-6">Feedback Analytics</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="chart-container">
+                            <canvas id="feedbackTrendsChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="departmentFeedbackChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Active Feedback List -->
+                <div class="bg-surface rounded-xl p-6 border border-border slide-up hover-lift transition-all duration-300" style="animation-delay: 0.3s;">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-semibold text-text-primary">Active Feedback Management</h3>
+                        <div class="flex items-center gap-2 text-sm text-text-secondary">
+                            <i class="fas fa-filter"></i>
+                            <span id="feedbackCount">24 feedbacks</span>
+                        </div>
+                    </div>
+                    
+                    <div id="feedbackList" class="space-y-4 max-h-96 overflow-y-auto">
+                        <!-- Feedback items will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recognition Management Panel -->
+            <div class="space-y-8">
+                <!-- Badge System Overview -->
+                <div class="bg-surface rounded-xl p-6 border border-border slide-up hover-lift transition-all duration-300" style="animation-delay: 0.4s;">
+                    <h3 class="text-lg font-semibold text-text-primary mb-6">Badge System Overview</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-3 bg-success-50 rounded-lg border border-success-200">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-success rounded-full flex items-center justify-center">
+                                    <i class="fas fa-star text-white"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-text-primary">Excellence Award</div>
+                                    <div class="text-sm text-text-secondary">45 awarded</div>
+                                </div>
+                            </div>
+                            <button onclick="manageBadge('excellence')" class="text-success hover:text-success-700">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-3 bg-warning-50 rounded-lg border border-warning-200">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-warning rounded-full flex items-center justify-center">
+                                    <i class="fas fa-trophy text-white"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-text-primary">Team Leader</div>
+                                    <div class="text-sm text-text-secondary">23 awarded</div>
+                                </div>
+                            </div>
+                            <button onclick="manageBadge('leader')" class="text-warning hover:text-warning-700">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-3 bg-primary-50 rounded-lg border border-primary-200">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                                    <i class="fas fa-medal text-white"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-text-primary">Innovation</div>
+                                    <div class="text-sm text-text-secondary">21 awarded</div>
+                                </div>
+                            </div>
+                            <button onclick="manageBadge('innovation')" class="text-primary hover:text-primary-700">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Recognition Activities -->
+                <div class="bg-surface rounded-xl p-6 border border-border slide-up hover-lift transition-all duration-300" style="animation-delay: 0.5s;">
+                    <h3 class="text-lg font-semibold text-text-primary mb-6">Recent Recognition</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3 p-3 bg-secondary-50 rounded-lg">
+                            <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?q=80&w=40&h=40&auto=format&fit=crop&ixlib=rb-4.0.3" alt="Employee" class="w-8 h-8 rounded-full object-cover" />
+                            <div class="flex-1">
+                                <div class="font-medium text-text-primary text-sm">Priya Sharma</div>
+                                <div class="text-xs text-text-secondary">Excellence Award • 2 hours ago</div>
+                            </div>
+                            <div class="w-6 h-6 bg-success rounded-full flex items-center justify-center">
+                                <i class="fas fa-star text-white text-xs"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3 p-3 bg-secondary-50 rounded-lg">
+                            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=40&h=40&auto=format&fit=crop&ixlib=rb-4.0.3" alt="Employee" class="w-8 h-8 rounded-full object-cover" />
+                            <div class="flex-1">
+                                <div class="font-medium text-text-primary text-sm">Vikram Gupta</div>
+                                <div class="text-xs text-text-secondary">Innovation • 5 hours ago</div>
+                            </div>
+                            <div class="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                                <i class="fas fa-medal text-white text-xs"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3 p-3 bg-secondary-50 rounded-lg">
+                            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=40&h=40&auto=format&fit=crop&ixlib=rb-4.0.3" alt="Employee" class="w-8 h-8 rounded-full object-cover" />
+                            <div class="flex-1">
+                                <div class="font-medium text-text-primary text-sm">Amit Singh</div>
+                                <div class="text-xs text-text-secondary">Team Leader • 1 day ago</div>
+                            </div>
+                            <div class="w-6 h-6 bg-warning rounded-full flex items-center justify-center">
+                                <i class="fas fa-trophy text-white text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="bg-surface rounded-xl p-6 border border-border slide-up hover-lift transition-all duration-300" style="animation-delay: 0.6s;">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4">Quick Actions</h3>
+                    <div class="space-y-3">
+                        <button onclick="openManualBadgeModal()" class="w-full bg-success hover:bg-success-600 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+                            <i class="fas fa-plus-circle"></i>
+                            Manual Badge Assignment
+                        </button>
+                        <button onclick="viewSystemAnalytics()" class="w-full bg-accent hover:bg-accent-600 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+                            <i class="fas fa-chart-bar"></i>
+                            System Analytics
+                        </button>
+                        <button onclick="generateComplianceReport()" class="w-full bg-secondary hover:bg-secondary-600 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+                            <i class="fas fa-file-alt"></i>
+                            Compliance Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Bulk Feedback Modal -->
+    <div id="bulkFeedbackModal" class="modal">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-semibold text-text-primary">Create Bulk Feedback</h3>
+                <button onclick="closeModal('bulkFeedbackModal')" class="text-text-secondary hover:text-text-primary">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="bulkFeedbackForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">Target Department</label>
+                    <select name="department" required class="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+                        <option value>Select Department</option>
+                        <option value="all">All Departments</option>
+                        <option value="IT">IT Department</option>
+                        <option value="HR">HR Department</option>
+                        <option value="Finance">Finance Department</option>
+                        <option value="Operations">Operations</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">Feedback Type</label>
+                    <select name="feedbackType" required class="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+                        <option value>Select Type</option>
+                        <option value="performance">Performance Review</option>
+                        <option value="recognition">Recognition</option>
+                        <option value="improvement">Improvement Areas</option>
+                        <option value="milestone">Milestone Achievement</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">Feedback Message</label>
+                    <textarea name="message" required class="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" rows="4" placeholder="Enter your feedback message..."></textarea>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" id="scheduleDelivery" class="rounded" />
+                    <label for="scheduleDelivery" class="text-sm text-text-secondary">Schedule for later delivery</label>
+                </div>
+                
+                <div class="flex gap-4 pt-4">
+                    <button type="submit" class="flex-1 bg-primary hover:bg-primary-700 text-white font-medium py-3 px-4 rounded-lg transition-colors">
+                        Send Bulk Feedback
+                    </button>
+                    <button type="button" onclick="closeModal('bulkFeedbackModal')" class="flex-1 bg-secondary-100 hover:bg-secondary-200 text-secondary-700 font-medium py-3 px-4 rounded-lg transition-colors">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Create Badge Modal -->
+    <div id="createBadgeModal" class="modal">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-semibold text-text-primary">Create New Badge</h3>
+                <button onclick="closeModal('createBadgeModal')" class="text-text-secondary hover:text-text-primary">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="createBadgeForm" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Badge Name</label>
+                        <input type="text" name="badgeName" required class="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Badge Color</label>
+                        <select name="badgeColor" required class="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+                            <option value>Select Color</option>
+                            <option value="success">Green (Excellence)</option>
+                            <option value="warning">Yellow (Achievement)</option>
+                            <option value="primary">Blue (Leadership)</option>
+                            <option value="accent">Purple (Innovation)</option>
+                            <option value="error">Red (Critical)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">Badge Icon</label>
+                    <div class="grid grid-cols-6 gap-3">
+                        <button type="button" class="icon-option p-3 border border-border rounded-lg hover:border-primary-300 transition-colors" data-icon="fa-star">
+                            <i class="fas fa-star"></i>
+                        </button>
+                        <button type="button" class="icon-option p-3 border border-border rounded-lg hover:border-primary-300 transition-colors" data-icon="fa-trophy">
+                            <i class="fas fa-trophy"></i>
+                        </button>
+                        <button type="button" class="icon-option p-3 border border-border rounded-lg hover:border-primary-300 transition-colors" data-icon="fa-medal">
+                            <i class="fas fa-medal"></i>
+                        </button>
+                        <button type="button" class="icon-option p-3 border border-border rounded-lg hover:border-primary-300 transition-colors" data-icon="fa-crown">
+                            <i class="fas fa-crown"></i>
+                        </button>
+                        <button type="button" class="icon-option p-3 border border-border rounded-lg hover:border-primary-300 transition-colors" data-icon="fa-gem">
+                            <i class="fas fa-gem"></i>
+                        </button>
+                        <button type="button" class="icon-option p-3 border border-border rounded-lg hover:border-primary-300 transition-colors" data-icon="fa-award">
+                            <i class="fas fa-award"></i>
+                        </button>
+                    </div>
+                    <input type="hidden" name="badgeIcon" required />
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">Achievement Criteria</label>
+                    <textarea name="criteria" required class="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" rows="3" placeholder="Define the criteria for earning this badge..."></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">Badge Preview</label>
+                    <div id="badgePreview" class="badge-preview bg-primary text-white">
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4 pt-4">
+                    <button type="submit" class="flex-1 bg-accent hover:bg-accent-700 text-white font-medium py-3 px-4 rounded-lg transition-colors">
+                        Create Badge
+                    </button>
+                    <button type="button" onclick="closeModal('createBadgeModal')" class="flex-1 bg-secondary-100 hover:bg-secondary-200 text-secondary-700 font-medium py-3 px-4 rounded-lg transition-colors">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // Custom cursor functionality
+        const cursor = document.querySelector('.custom-cursor');
+        let mouseX = 0;
+        let mouseY = 0;
+        let cursorX = 0;
+        let cursorY = 0;
+        
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+        
+        function animateCursor() {
+            cursorX += (mouseX - cursorX) * 0.1;
+            cursorY += (mouseY - cursorY) * 0.1;
+            cursor.style.left = cursorX + 'px';
+            cursor.style.top = cursorY + 'px';
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+        
+        // Cursor hover effects
+        document.querySelectorAll('button, a, input, select, textarea, .hover-lift, .filter-tag').forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+        
+        // Mock feedback data
+        const feedbacks = [
+            { id: 1, employee: 'Rajesh Kumar', department: 'IT', type: 'performance', status: 'pending', message: 'Excellent work on the database optimization project', date: '2025-01-10' },
+            { id: 2, employee: 'Priya Sharma', department: 'HR', type: 'recognition', status: 'delivered', message: 'Outstanding leadership in team building activities', date: '2025-01-09' },
+            { id: 3, employee: 'Amit Singh', department: 'Finance', type: 'improvement', status: 'pending', message: 'Focus on improving report submission timelines', date: '2025-01-08' },
+            { id: 4, employee: 'Sunita Patel', department: 'Operations', type: 'milestone', status: 'delivered', message: 'Congratulations on achieving 100% efficiency target', date: '2025-01-07' },
+            { id: 5, employee: 'Vikram Gupta', department: 'IT', type: 'recognition', status: 'overdue', message: 'Innovative solution for system automation', date: '2025-01-05' },
+            { id: 6, employee: 'Meera Joshi', department: 'HR', type: 'performance', status: 'pending', message: 'Strong performance in recruitment activities', date: '2025-01-10' }
+        ];
+        
+        // Initialize dashboard
+        function initializeDashboard() {
+            renderCharts();
+            renderFeedbackList();
+            setupEventListeners();
+        }
+        
+        // Render charts
+        function renderCharts() {
+            // Feedback Trends Chart
+            const trendsCtx = document.getElementById('feedbackTrendsChart').getContext('2d');
+            new Chart(trendsCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    datasets: [{
+                        label: 'Feedbacks Sent',
+                        data: [42, 38, 45, 51],
+                        borderColor: 'rgb(37, 99, 235)',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Response Rate',
+                        data: [85, 88, 92, 89],
+                        borderColor: 'rgb(5, 150, 105)',
+                        backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Department Feedback Distribution
+            const deptCtx = document.getElementById('departmentFeedbackChart').getContext('2d');
+            new Chart(deptCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['IT Department', 'HR Department', 'Finance', 'Operations'],
+                    datasets: [{
+                        data: [35, 25, 20, 20],
+                        backgroundColor: [
+                            'var(--color-primary)',
+                            'var(--color-accent)',
+                            'var(--color-warning)',
+                            'var(--color-success)'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Render feedback list
+        function renderFeedbackList(filteredFeedbacks = feedbacks) {
+            const feedbackList = document.getElementById('feedbackList');
+            const feedbackCount = document.getElementById('feedbackCount');
+            
+            feedbackCount.textContent = `${filteredFeedbacks.length} feedbacks`;
+            
+            feedbackList.innerHTML = filteredFeedbacks.map(feedback => `
+                <div class="feedback-item border border-border rounded-lg p-4 hover:border-primary-300 transition-colors">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-text-primary">${feedback.employee}</h4>
+                            <p class="text-sm text-text-secondary">${feedback.department} • ${feedback.type}</p>
+                            <p class="text-xs text-text-secondary mt-1">${feedback.date}</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-1 text-xs rounded-full ${getStatusStyle(feedback.status)}">${feedback.status}</span>
+                            <div class="flex gap-1">
+                                <button onclick="editFeedback(${feedback.id})" class="text-text-secondary hover:text-primary p-1">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteFeedback(${feedback.id})" class="text-text-secondary hover:text-error p-1">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-sm text-text-primary bg-secondary-50 p-3 rounded-lg">${feedback.message}</p>
+                    <div class="flex items-center justify-between mt-3">
+                        <div class="flex gap-2">
+                            ${feedback.status === 'pending' ? `
+                                <button onclick="sendFeedback(${feedback.id})" class="bg-primary hover:bg-primary-700 text-white text-xs px-3 py-1 rounded-lg transition-colors">
+                                    Send Now
+                                </button>
+                            ` : ''}
+                            <button onclick="viewFeedbackDetails(${feedback.id})" class="bg-secondary-100 hover:bg-secondary-200 text-secondary-700 text-xs px-3 py-1 rounded-lg transition-colors">
+                                View Details
+                            </button>
+                        </div>
+                        <div class="text-xs text-text-secondary">
+                            <i class="fas fa-clock mr-1"></i>
+                            ${getTimeAgo(feedback.date)}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Badge creation icon selection
+            document.querySelectorAll('.icon-option').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.querySelectorAll('.icon-option').forEach(btn => btn.classList.remove('border-primary', 'bg-primary-50'));
+                    this.classList.add('border-primary', 'bg-primary-50');
+                    document.querySelector('input[name="badgeIcon"]').value = this.dataset.icon;
+                    updateBadgePreview();
+                });
+            });
+            
+            // Badge color selection
+            document.querySelector('select[name="badgeColor"]').addEventListener('change', updateBadgePreview);
+            document.querySelector('input[name="badgeName"]').addEventListener('input', updateBadgePreview);
+            
+            // Form submissions
+            document.getElementById('bulkFeedbackForm').addEventListener('submit', handleBulkFeedback);
+            document.getElementById('createBadgeForm').addEventListener('submit', handleCreateBadge);
+            
+            // Search functionality
+            document.getElementById('searchFeedback').addEventListener('input', function() {
+                const query = this.value.toLowerCase();
+                const filtered = feedbacks.filter(f => 
+                    f.employee.toLowerCase().includes(query) || 
+                    f.department.toLowerCase().includes(query)
+                );
+                renderFeedbackList(filtered);
+            });
+            
+            // Department filter
+            document.getElementById('departmentFilter').addEventListener('change', function() {
+                const dept = this.value;
+                const filtered = dept ? feedbacks.filter(f => f.department === dept) : feedbacks;
+                renderFeedbackList(filtered);
+            });
+        }
+        
+        // Utility functions
+        function getStatusStyle(status) {
+            switch(status) {
+                case 'delivered': return 'bg-success-100 text-success-600';
+                case 'pending': return 'bg-warning-100 text-warning-600';
+                case 'overdue': return 'bg-error-100 text-error-600';
+                default: return 'bg-secondary-100 text-secondary-600';
+            }
+        }
+        
+        function getTimeAgo(date) {
+            const today = new Date('2025-01-10');
+            const feedbackDate = new Date(date);
+            const diffTime = Math.abs(today - feedbackDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 1) return 'Today';
+            if (diffDays === 2) return 'Yesterday';
+            return `${diffDays - 1} days ago`;
+        }
+        
+        function updateBadgePreview() {
+            const preview = document.getElementById('badgePreview');
+            const color = document.querySelector('select[name="badgeColor"]').value;
+            const icon = document.querySelector('input[name="badgeIcon"]').value || 'fa-star';
+            
+            // Update preview classes
+            preview.className = `badge-preview text-white ${color ? 'bg-' + color : 'bg-primary'}`;
+            preview.innerHTML = `<i class="fas ${icon}"></i>`;
+        }
+        
+        // Filter functions
+        function filterFeedback(status) {
+            // Update active filter
+            document.querySelectorAll('.filter-tag').forEach(tag => tag.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Filter data
+            const filtered = status === 'all' ? feedbacks : feedbacks.filter(f => f.status === status);
+            renderFeedbackList(filtered);
+        }
+        
+        // Modal functions
+        function openBulkFeedbackModal() {
+            document.getElementById('bulkFeedbackModal').classList.add('active');
+        }
+        
+        function openCreateBadgeModal() {
+            document.getElementById('createBadgeModal').classList.add('active');
+        }
+        
+        function openManualBadgeModal() {
+            showToast('Manual badge assignment feature coming soon!');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+        
+        // Action functions
+        function handleBulkFeedback(e) {
+            e.preventDefault();
+            showToast('Bulk feedback sent successfully!');
+            closeModal('bulkFeedbackModal');
+            e.target.reset();
+        }
+        
+        function handleCreateBadge(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const badgeName = formData.get('badgeName');
+            showToast(`Badge "${badgeName}" created successfully!`);
+            closeModal('createBadgeModal');
+            e.target.reset();
+        }
+        
+        function sendFeedback(id) {
+            showToast('Feedback sent successfully!');
+            const feedback = feedbacks.find(f => f.id === id);
+            if (feedback) feedback.status = 'delivered';
+            renderFeedbackList();
+        }
+        
+        function editFeedback(id) {
+            showToast('Edit feedback feature coming soon!');
+        }
+        
+        function deleteFeedback(id) {
+            if (confirm('Are you sure you want to delete this feedback?')) {
+                const index = feedbacks.findIndex(f => f.id === id);
+                if (index > -1) {
+                    feedbacks.splice(index, 1);
+                    renderFeedbackList();
+                    showToast('Feedback deleted successfully!');
+                }
+            }
+        }
+        
+        function viewFeedbackDetails(id) {
+            showToast('View feedback details feature coming soon!');
+        }
+        
+        function manageBadge(type) {
+            showToast(`Manage ${type} badge feature coming soon!`);
+        }
+        
+        function viewSystemAnalytics() {
+            showToast('System analytics feature coming soon!');
+        }
+        
+        function generateComplianceReport() {
+            showToast('Compliance report generated successfully!');
+        }
+        
+        function exportReport() {
+            showToast('Report exported successfully!');
+        }
+        
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = 'login.html';
+            }
+        }
+        
+        // Toast notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', initializeDashboard);
+    </script>
+<script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+
+    <script src="https://cdn.botpress.cloud/webchat/v3.3/inject.js"></script>
+<script src="https://files.bpcontent.cloud/2025/10/01/06/20251001065837-31L1AP49.js" defer></script>
+    
+</body>
+</html>

@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Project Management & KPI - e-GovPro360</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* CSS Variables & Base Styles */
+        :root {
+            --color-primary: #3B82F6;
+            --color-primary-50: #EFF6FF;
+            --color-primary-100: #DBEAFE;
+            --color-primary-200: #BFDBFE;
+            --color-primary-300: #93C5FD;
+            --color-primary-600: #2563EB;
+            --color-primary-700: #1D4ED8;
+            
+            --color-accent: #8B5CF6;
+            --color-accent-100: #EDE9FE;
+            --color-accent-700: #6D28D9;
+            
+            --color-secondary: #64748B;
+            --color-secondary-100: #F1F5F9;
+            --color-secondary-200: #E2E8F0;
+            --color-secondary-700: #334155;
+            
+            --color-success: #10B981;
+            --color-success-50: #ECFDF5;
+            --color-success-100: #D1FAE5;
+            --color-success-200: #A7F3D0;
+            --color-success-600: #059669;
+            
+            --color-warning: #F59E0B;
+            --color-warning-50: #FFFBEB;
+            --color-warning-100: #FEF3C7;
+            --color-warning-200: #FDE68A;
+            --color-warning-600: #D97706;
+            
+            --color-error: #EF4444;
+            --color-error-50: #FEF2F2;
+            --color-error-100: #FEE2E2;
+            --color-error-200: #FECACA;
+            --color-error-600: #DC2626;
+            
+            --color-background: #F8FAFC;
+            --color-surface: #FFFFFF;
+            --color-border: #E2E8F0;
+            
+            --color-text-primary: #1E293B;
+            --color-text-secondary: #64748B;
+            
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text-primary);
+            line-height: 1.6;
+        }
+
+        .font-inter { font-family: 'Inter', sans-serif; }
+        .bg-background { background-color: var(--color-background); }
+        .bg-surface { background-color: var(--color-surface); }
+        .bg-primary { background-color: var(--color-primary); }
+        .bg-primary-50 { background-color: var(--color-primary-50); }
+        .bg-primary-100 { background-color: var(--color-primary-100); }
+        .bg-accent { background-color: var(--color-accent); }
+        .bg-accent-100 { background-color: var(--color-accent-100); }
+        .bg-secondary { background-color: var(--color-secondary); }
+        .bg-secondary-100 { background-color: var(--color-secondary-100); }
+        .bg-secondary-200 { background-color: var(--color-secondary-200); }
+        .bg-success { background-color: var(--color-success); }
+        .bg-success-50 { background-color: var(--color-success-50); }
+        .bg-warning-100 { background-color: var(--color-warning-100); }
+        .bg-error { background-color: var(--color-error); }
+
+        .text-primary { color: var(--color-primary); }
+        .text-accent { color: var(--color-accent); }
+        .text-success { color: var(--color-success); }
+        .text-warning { color: var(--color-warning); }
+        .text-error { color: var(--color-error); }
+        .text-text-primary { color: var(--color-text-primary); }
+        .text-text-secondary { color: var(--color-text-secondary); }
+        .text-white { color: white; }
+        .text-primary-600 { color: var(--color-primary-600); }
+        .text-secondary-700 { color: var(--color-secondary-700); }
+
+        .border-border { border-color: var(--color-border); }
+        .border-primary { border-color: var(--color-primary); }
+        .border-primary-200 { border-color: var(--color-primary-200); }
+        .border-primary-300 { border-color: var(--color-primary-300); }
+
+        .hover\:bg-primary-700:hover { background-color: var(--color-primary-700); }
+        .hover\:bg-accent-700:hover { background-color: var(--color-accent-700); }
+        .hover\:bg-secondary-200:hover { background-color: var(--color-secondary-200); }
+        .hover\:bg-secondary-700:hover { background-color: var(--color-secondary-700); }
+        .hover\:text-primary:hover { color: var(--color-primary); }
+        .hover\:text-text-primary:hover { color: var(--color-text-primary); }
+        .hover\:text-error:hover { color: var(--color-error); }
+
+        .min-h-screen { min-height: 100vh; }
+        .max-w-7xl { max-width: 80rem; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .p-2 { padding: 0.5rem; }
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        .pt-4 { padding-top: 1rem; }
+        .pb-1 { padding-bottom: 0.25rem; }
+
+        .mb-1 { margin-bottom: 0.25rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        .mt-1 { margin-top: 0.25rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mt-6 { margin-top: 1.5rem; }
+        .mr-1 { margin-right: 0.25rem; }
+        .mr-2 { margin-right: 0.5rem; }
+        .-top-1 { top: -0.25rem; }
+        .-right-1 { right: -0.25rem; }
+
+        .flex { display: flex; }
+        .grid { display: grid; }
+        .hidden { display: none; }
+        .block { display: block; }
+        .inline-block { display: inline-block; }
+
+        .flex-1 { flex: 1; }
+        .flex-wrap { flex-wrap: wrap; }
+        .items-center { align-items: center; }
+        .items-start { align-items: flex-start; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+        .gap-8 { gap: 2rem; }
+
+        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+        .w-8 { width: 2rem; }
+        .w-10 { width: 2.5rem; }
+        .w-12 { width: 3rem; }
+        .w-5 { width: 1.25rem; }
+        .w-full { width: 100%; }
+        .w-90 { width: 90%; }
+        .h-8 { height: 2rem; }
+        .h-10 { height: 2.5rem; }
+        .h-12 { height: 3rem; }
+        .h-5 { height: 1.25rem; }
+        .h-16 { height: 4rem; }
+
+        .rounded-full { border-radius: 9999px; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .rounded-xl { border-radius: 0.75rem; }
+        .rounded { border-radius: 0.25rem; }
+
+        .border { border-width: 1px; }
+        .border-b { border-bottom-width: 1px; }
+        .border-b-2 { border-bottom-width: 2px; }
+        .border-t { border-top-width: 1px; }
+
+        .text-xs { font-size: 0.75rem; line-height: 1rem; }
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+        .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+
+        .relative { position: relative; }
+        .absolute { position: absolute; }
+        .fixed { position: fixed; }
+        .sticky { position: sticky; }
+
+        .top-0 { top: 0; }
+        .left-0 { left: 0; }
+        .right-0 { right: 0; }
+
+        .z-50 { z-index: 50; }
+        .z-100 { z-index: 100; }
+
+        .object-cover { object-fit: cover; }
+
+        .transition-colors { transition-property: color, background-color, border-color; transition-duration: 150ms; }
+        .transition-all { transition-property: all; transition-duration: 150ms; }
+
+        .cursor-pointer { cursor: pointer; }
+
+        .overflow-y-auto { overflow-y: auto; }
+        .overflow-x-auto { overflow-x: auto; }
+
+        .space-y-2 > * + * { margin-top: 0.5rem; }
+        .space-y-3 > * + * { margin-top: 0.75rem; }
+        .space-y-4 > * + * { margin-top: 1rem; }
+        .space-y-6 > * + * { margin-top: 1.5rem; }
+
+        .min-w-\[200px\] { min-width: 200px; }
+
+        .max-h-80vh { max-height: 80vh; }
+        .max-h-90vh { max-height: 90vh; }
+
+        .focus\:outline-none:focus { outline: none; }
+        .focus\:ring-2:focus { box-shadow: 0 0 0 2px var(--color-primary); }
+        .focus\:ring-primary:focus { --tw-ring-color: var(--color-primary); }
+        .focus\:border-primary:focus { border-color: var(--color-primary); }
+
+        @media (min-width: 640px) {
+            .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+            .sm\:flex-row { flex-direction: row; }
+            .sm\:items-center { align-items: center; }
+            .sm\:justify-between { justify-content: space-between; }
+            .sm\:block { display: block; }
+            .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        @media (min-width: 768px) {
+            .md\:flex { display: flex; }
+            .md\:flex-row { flex-direction: row; }
+            .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+
+        @media (min-width: 1024px) {
+            .lg\:px-8 { padding-left: 2rem; padding-right: 2rem; }
+            .lg\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            .lg\:col-span-2 { grid-column: span 2 / span 2; }
+        }
+        /* Custom cursor styles */
+        body { cursor: none; }
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: var(--color-primary);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: all 0.1s ease;
+            mix-blend-mode: difference;
+        }
+        .custom-cursor.hover { width: 40px; height: 40px; background: var(--color-accent); }
+        .custom-cursor.click { width: 15px; height: 15px; }
+
+        /* Animations */
+        .fade-in { animation: fadeIn 0.6s ease-out; }
+        .slide-up { animation: slideUp 0.6s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Project cards */
+        .project-card {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .project-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+            border-color: var(--color-primary-300);
+        }
+
+        /* Status badges */
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-active { background: #DCFCE7; color: #16A34A; }
+        .status-pending { background: #FEF3C7; color: #D97706; }
+        .status-completed { background: #DBEAFE; color: #2563EB; }
+        .status-overdue { background: #FEE2E2; color: #DC2626; }
+
+        /* Priority badges */
+        .priority-high { background: #FEE2E2; color: #DC2626; }
+        .priority-medium { background: #FEF3C7; color: #D97706; }
+        .priority-low { background: #DBEAFE; color: #2563EB; }
+
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .modal.active { opacity: 1; visibility: visible; }
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+        .modal.active .modal-content { transform: scale(1); }
+
+        /* Tabs */
+        .tab-buttons {
+            display: flex;
+            gap: 8px;
+            border-bottom: 2px solid var(--color-border);
+            margin-bottom: 24px;
+        }
+        .tab-btn {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--color-text-secondary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--color-border);
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 24px;
+            padding-left: 20px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -36px;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px var(--color-primary);
+        }
+
+        /* Kanban Board */
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            overflow-x: auto;
+        }
+        .kanban-column {
+            background: var(--color-background);
+            border-radius: 12px;
+            padding: 16px;
+            min-height: 400px;
+        }
+        .kanban-card {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: move;
+            transition: all 0.2s ease;
+        }
+        .kanban-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* Progress bars */
+        .progress-bar {
+            height: 8px;
+            background: var(--color-secondary-200);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--color-primary);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* Team members */
+        .team-avatars {
+            display: flex;
+            align-items: center;
+        }
+        .team-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid white;
+            margin-left: -8px;
+            object-fit: cover;
+        }
+        .team-avatar:first-child { margin-left: 0; }
+
+        /* Filters */
+        .filter-chips {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .filter-chip {
+            padding: 6px 16px;
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .filter-chip.active {
+            background: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .kanban-board { grid-template-columns: 1fr; }
+            .modal-content { padding: 20px; }
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--color-success);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1001;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        .notification.show { transform: translateX(0); }
+
+        /* Stats cards */
+        .stat-card {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+            border-color: var(--color-primary-200);
+        }
+
+        /* Language switcher */
+        .language-switcher { display: flex; gap: 8px; }
+        .lang-btn {
+            padding: 6px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            background: white;
+            color: var(--color-text-secondary);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .lang-btn.active {
+            background: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+    </style>
+</head>
+<body class="bg-background min-h-screen font-inter">
+    <!-- Custom Cursor -->
+    <div class="custom-cursor"></div>
+
+    <!-- Notification Toast -->
+    <div id="notification" class="notification">
+        <span id="notificationText"></span>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-surface border-b border-border sticky top-0 z-50 fade-in">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center justify-center w-10 h-10 bg-primary-100 rounded-full">
+                        <i class="fas fa-building text-primary-600"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-text-primary">e-GovPro360</h1>
+                        <p class="text-sm text-text-secondary">Project Management & KPI</p>
+                    </div>
+                </div>
+
+                <nav class="hidden md:flex items-center gap-6">
+                    <a href="admin_dashboard.html" class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </a>
+                    <a href="user_management.html" class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-users-cog mr-2"></i>Users
+                    </a>
+                    <a href="project_management.html" class="text-primary font-medium border-b-2 border-primary pb-1">
+                        <i class="fas fa-project-diagram mr-2"></i>Projects
+                    </a>
+                      <a href="admin_feedback_recognition.html" class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-project-diagram mr-2"></i>Feedback
+                    </a>
+                    <a href="setting.html" class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-cog mr-2"></i>Settings
+                    </a>
+                </nav>
+
+                <div class="flex items-center gap-4">
+                    <div class="language-switcher">
+                        <button class="lang-btn active" onclick="switchLanguage('en')">EN</button>
+                        <button class="lang-btn" onclick="switchLanguage('hi')">हिं</button>
+                    </div>
+                    <button class="relative p-2 text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-bell text-lg"></i>
+                        <span class="absolute -top-1 -right-1 w-5 h-5 bg-error text-white text-xs rounded-full flex items-center justify-center">5</span>
+                    </button>
+                    <div class="flex items-center gap-3">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=100" 
+                             alt="Admin" class="w-8 h-8 rounded-full object-cover" />
+                        <div class="hidden sm:block">
+                            <p class="text-sm font-medium text-text-primary">Admin User</p>
+                            <p class="text-xs text-text-secondary">Administrator</p>
+                        </div>
+                        <button onclick="logout()" class="text-text-secondary hover:text-error transition-colors">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Header -->
+        <div class="mb-8 slide-up">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h2 class="text-3xl font-bold text-text-primary">Project Management</h2>
+                    <p class="text-text-secondary mt-1">Track projects, assign KPIs, and monitor team performance</p>
+                </div>
+                <button onclick="openCreateProjectModal()" 
+                        class="bg-primary hover:bg-primary-700 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center gap-2">
+                    <i class="fas fa-plus"></i>
+                    Create New Project
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 slide-up" style="animation-delay: 0.1s;">
+            <div class="stat-card">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-project-diagram text-primary text-xl"></i>
+                    </div>
+                    <span class="text-xs text-success font-semibold">+12%</span>
+                </div>
+                <h3 class="text-2xl font-bold text-text-primary mb-1">28</h3>
+                <p class="text-sm text-text-secondary">Total Projects</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-success-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-check-circle text-success text-xl"></i>
+                    </div>
+                    <span class="text-xs text-success font-semibold">+8%</span>
+                </div>
+                <h3 class="text-2xl font-bold text-text-primary mb-1">15</h3>
+                <p class="text-sm text-text-secondary">Active Projects</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-warning-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-clock text-warning text-xl"></i>
+                    </div>
+                    <span class="text-xs text-error font-semibold">-3%</span>
+                </div>
+                <h3 class="text-2xl font-bold text-text-primary mb-1">4</h3>
+                <p class="text-sm text-text-secondary">Pending Review</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-accent-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-trophy text-accent text-xl"></i>
+                    </div>
+                    <span class="text-xs text-success font-semibold">+15%</span>
+                </div>
+                <h3 class="text-2xl font-bold text-text-primary mb-1">9</h3>
+                <p class="text-sm text-text-secondary">Completed</p>
+            </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="bg-surface rounded-xl p-6 border border-border mb-8 slide-up" style="animation-delay: 0.2s;">
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="switchTab('overview')">
+                    <i class="fas fa-th-large mr-2"></i>Overview
+                </button>
+                <button class="tab-btn" onclick="switchTab('kanban')">
+                    <i class="fas fa-columns mr-2"></i>Kanban Board
+                </button>
+                <button class="tab-btn" onclick="switchTab('timeline')">
+                    <i class="fas fa-calendar-alt mr-2"></i>Timeline
+                </button>
+                <button class="tab-btn" onclick="switchTab('kpi')">
+                    <i class="fas fa-chart-line mr-2"></i>KPI Dashboard
+                </button>
+            </div>
+
+            <!-- Filters -->
+            <div class="mt-6 flex flex-wrap gap-4 items-center">
+                <div class="flex-1 min-w-[200px]">
+                    <input type="text" id="searchProjects" placeholder="Search projects..." 
+                           class="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" />
+                </div>
+                <div class="filter-chips">
+                    <button class="filter-chip active" onclick="filterProjects('all')">All</button>
+                    <button class="filter-chip" onclick="filterProjects('active')">Active</button>
+                    <button class="filter-chip" onclick="filterProjects('pending')">Pending</button>
+                    <button class="filter-chip" onclick="filterProjects('completed')">Completed</button>
+                    <button class="filter-chip" onclick="filterProjects('overdue')">Overdue</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Contents -->
+        
+        <!-- Overview Tab -->
+        <div id="overviewTab" class="tab-content active">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Projects will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Kanban Board Tab -->
+        <div id="kanbanTab" class="tab-content">
+            <div class="kanban-board">
+                <div class="kanban-column">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-semibold text-text-primary">To Do</h3>
+                        <span class="text-sm text-text-secondary">5</span>
+                    </div>
+                    <div id="todoColumn"></div>
+                </div>
+                <div class="kanban-column">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-semibold text-text-primary">In Progress</h3>
+                        <span class="text-sm text-text-secondary">8</span>
+                    </div>
+                    <div id="inProgressColumn"></div>
+                </div>
+                <div class="kanban-column">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-semibold text-text-primary">Review</h3>
+                        <span class="text-sm text-text-secondary">4</span>
+                    </div>
+                    <div id="reviewColumn"></div>
+                </div>
+                <div class="kanban-column">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-semibold text-text-primary">Completed</h3>
+                        <span class="text-sm text-text-secondary">9</span>
+                    </div>
+                    <div id="completedColumn"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline Tab -->
+        <div id="timelineTab" class="tab-content">
+            <div class="bg-surface rounded-xl p-6 border border-border">
+                <div class="timeline" id="projectTimeline"></div>
+            </div>
+        </div>
+
+        <!-- KPI Dashboard Tab -->
+        <div id="kpiTab" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-surface rounded-xl p-6 border border-border">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4">Project Completion Trends</h3>
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="completionChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-surface rounded-xl p-6 border border-border">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4">Department Performance</h3>
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="departmentChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-surface rounded-xl p-6 border border-border">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4">KPI Achievement Rate</h3>
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="kpiAchievementChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-surface rounded-xl p-6 border border-border">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4">Resource Allocation</h3>
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="resourceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Create Project Modal -->
+    <div id="createProjectModal" class="modal">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-semibold text-text-primary">Create New Project</h3>
+                <button onclick="closeModal('createProjectModal')" class="text-text-secondary hover:text-text-primary">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form onsubmit="createProject(event)">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Project Name</label>
+                        <input type="text" required class="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Enter project name" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Description</label>
+                        <textarea rows="3" class="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Project description"></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-text-primary mb-2">Department</label>
+                            <select class="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                                <option>IT Department</option>
+                                <option>HR Department</option>
+                                <option>Finance</option>
+                                <option>Operations</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-primary mb-2">Priority</label>
+                            <select class="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                                <option>High</option>
+                                <option>Medium</option>
+                                <option>Low</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-text-primary mb-2">Start Date</label>
+                            <input type="date" class="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-primary mb-2">End Date</label>
+                            <input type="date" class="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" />
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Assign Team Members</label>
+                        <select multiple class="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" style="height: 100px;">
+                            <option>Rajesh Kumar - IT</option>
+                            <option>Priya Sharma - HR</option>
+                            <option>Amit Singh - Finance</option>
+                            <option>Sunita Patel - Operations</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex gap-4 mt-6">
+                    <button type="submit" class="flex-1 bg-primary hover:bg-primary-700 text-white py-3 px-6 rounded-lg transition-colors">
+                        Create Project
+                    </button>
+                    <button type="button" onclick="closeModal('createProjectModal')" class="flex-1 bg-secondary-100 text-secondary-700 hover:bg-secondary-200 py-3 px-6 rounded-lg transition-colors">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Project Details Modal -->
+    <div id="projectDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-semibold text-text-primary">Project Details</h3>
+                <button onclick="closeModal('projectDetailsModal')" class="text-text-secondary hover:text-text-primary">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="projectDetailsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // Custom cursor
+        const cursor = document.querySelector('.custom-cursor');
+        let mouseX = 0, mouseY = 0, cursorX = 0, cursorY = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        function animateCursor() {
+            cursorX += (mouseX - cursorX) * 0.1;
+            cursorY += (mouseY - cursorY) * 0.1;
+            cursor.style.left = cursorX + 'px';
+            cursor.style.top = cursorY + 'px';
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        document.querySelectorAll('button, a, input, select, .project-card, .kanban-card').forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+
+        // Mock project data
+        const projects = [
+            {
+                id: 1,
+                name: 'Digital Transformation Initiative',
+                description: 'Modernize government services with digital solutions',
+                department: 'IT',
+                status: 'active',
+                priority: 'high',
+                progress: 68,
+                startDate: '2025-01-01',
+                endDate: '2025-06-30',
+                team: ['Rajesh Kumar', 'Vikram Gupta', 'Rohit Mehta'],
+                tasks: 24,
+                completedTasks: 16,
+                kanbanStatus: 'inprogress'
+            },
+            {
+                id: 2,
+                name: 'Employee Training Program',
+                description: 'Comprehensive training for all staff members',
+                department: 'HR',
+                status: 'active',
+                priority: 'medium',
+                progress: 45,
+                startDate: '2025-01-15',
+                endDate: '2025-04-15',
+                team: ['Priya Sharma', 'Anita Desai'],
+                tasks: 18,
+                completedTasks: 8,
+                kanbanStatus: 'inprogress'
+            },
+            {
+                id: 3,
+                name: 'Budget Optimization',
+                description: 'Review and optimize departmental budgets',
+                department: 'Finance',
+                status: 'pending',
+                priority: 'high',
+                progress: 25,
+                startDate: '2025-02-01',
+                endDate: '2025-05-31',
+                team: ['Amit Singh', 'Deepak Agarwal'],
+                tasks: 12,
+                completedTasks: 3,
+                kanbanStatus: 'todo'
+            },
+            {
+                id: 4,
+                name: 'Infrastructure Upgrade',
+                description: 'Upgrade office infrastructure and facilities',
+                department: 'Operations',
+                status: 'active',
+                priority: 'high',
+                progress: 82,
+                startDate: '2024-11-01',
+                endDate: '2025-02-28',
+                team: ['Sunita Patel', 'Kavya Nair', 'Neha Kapoor'],
+                tasks: 30,
+                completedTasks: 25,
+                kanbanStatus: 'review'
+            },
+            {
+                id: 5,
+                name: 'Cybersecurity Enhancement',
+                description: 'Implement advanced security measures',
+                department: 'IT',
+                status: 'completed',
+                priority: 'high',
+                progress: 100,
+                startDate: '2024-09-01',
+                endDate: '2024-12-31',
+                team: ['Vikram Gupta', 'Rajesh Kumar'],
+                tasks: 20,
+                completedTasks: 20,
+                kanbanStatus: 'completed'
+            },
+            {
+                id: 6,
+                name: 'Performance Management System',
+                description: 'New system for tracking employee performance',
+                department: 'HR',
+                status: 'active',
+                priority: 'medium',
+                progress: 55,
+                startDate: '2025-01-10',
+                endDate: '2025-07-10',
+                team: ['Priya Sharma', 'Meera Joshi'],
+                tasks: 22,
+                completedTasks: 12,
+                kanbanStatus: 'inprogress'
+            },
+            {
+                id: 7,
+                name: 'Cost Reduction Strategy',
+                description: 'Identify and implement cost-saving measures',
+                department: 'Finance',
+                status: 'pending',
+                priority: 'medium',
+                progress: 15,
+                startDate: '2025-02-15',
+                endDate: '2025-08-15',
+                team: ['Arjun Reddy'],
+                tasks: 15,
+                completedTasks: 2,
+                kanbanStatus: 'todo'
+            },
+            {
+                id: 8,
+                name: 'Customer Service Portal',
+                description: 'Online portal for citizen services',
+                department: 'IT',
+                status: 'active',
+                priority: 'high',
+                progress: 72,
+                startDate: '2024-12-01',
+                endDate: '2025-03-31',
+                team: ['Rohit Mehta', 'Rajesh Kumar', 'Vikram Gupta'],
+                tasks: 28,
+                completedTasks: 20,
+                kanbanStatus: 'review'
+            },
+            {
+                id: 9,
+                name: 'Workflow Automation',
+                description: 'Automate repetitive administrative tasks',
+                department: 'Operations',
+                status: 'completed',
+                priority: 'medium',
+                progress: 100,
+                startDate: '2024-10-01',
+                endDate: '2024-12-31',
+                team: ['Sunita Patel', 'Kavya Nair'],
+                tasks: 16,
+                completedTasks: 16,
+                kanbanStatus: 'completed'
+            }
+        ];
+
+        let currentFilter = 'all';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProjects();
+            renderKanbanBoard();
+            renderTimeline();
+            renderCharts();
+            setupSearch();
+        });
+
+        // Render projects in overview
+        function renderProjects(filter = 'all') {
+            const container = document.querySelector('#overviewTab .grid');
+            let filteredProjects = projects;
+
+            if (filter !== 'all') {
+                filteredProjects = projects.filter(p => p.status === filter);
+            }
+
+            container.innerHTML = filteredProjects.map(project => `
+                <div class="project-card" onclick="openProjectDetails(${project.id})">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold text-text-primary mb-1">${project.name}</h3>
+                            <p class="text-sm text-text-secondary">${project.department}</p>
+                        </div>
+                        <span class="status-badge status-${project.status}">${project.status.toUpperCase()}</span>
+                    </div>
+                    
+                    <p class="text-sm text-text-secondary mb-4">${project.description}</p>
+                    
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs text-text-secondary">Progress</span>
+                        <span class="text-sm font-semibold text-text-primary">${project.progress}%</span>
+                    </div>
+                    <div class="progress-bar mb-4">
+                        <div class="progress-fill" style="width: ${project.progress}%"></div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div class="team-avatars">
+                            ${project.team.slice(0, 3).map((member, idx) => `
+                                <img src="https://images.unsplash.com/photo-${idx % 2 === 0 ? '1472099645785-5658abf4ff4e' : '1494790108755-2616b612b786'}?q=80&w=100" 
+                                     alt="${member}" class="team-avatar" title="${member}" />
+                            `).join('')}
+                            ${project.team.length > 3 ? `<div class="team-avatar flex items-center justify-center bg-secondary-200 text-xs font-semibold text-text-primary">+${project.team.length - 3}</div>` : ''}
+                        </div>
+                        <span class="priority-${project.priority} status-badge">${project.priority.toUpperCase()}</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between mt-4 pt-4 border-t border-border text-xs text-text-secondary">
+                        <span><i class="fas fa-tasks mr-1"></i>${project.completedTasks}/${project.tasks} Tasks</span>
+                        <span><i class="fas fa-calendar mr-1"></i>${new Date(project.endDate).toLocaleDateString()}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Kanban Board
+        function renderKanbanBoard() {
+            const columns = {
+                todo: document.getElementById('todoColumn'),
+                inprogress: document.getElementById('inProgressColumn'),
+                review: document.getElementById('reviewColumn'),
+                completed: document.getElementById('completedColumn')
+            };
+
+            Object.keys(columns).forEach(status => {
+                const columnProjects = projects.filter(p => p.kanbanStatus === status);
+                columns[status].innerHTML = columnProjects.map(project => `
+                    <div class="kanban-card" draggable="true" ondragstart="drag(event, ${project.id})">
+                        <div class="flex items-start justify-between mb-2">
+                            <h4 class="font-semibold text-text-primary text-sm">${project.name}</h4>
+                            <span class="priority-${project.priority} status-badge">${project.priority[0].toUpperCase()}</span>
+                        </div>
+                        <p class="text-xs text-text-secondary mb-3">${project.description.substring(0, 60)}...</p>
+                        <div class="progress-bar mb-3">
+                            <div class="progress-fill" style="width: ${project.progress}%"></div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="team-avatars">
+                                ${project.team.slice(0, 2).map((member, idx) => `
+                                    <img src="https://images.unsplash.com/photo-${idx % 2 === 0 ? '1472099645785-5658abf4ff4e' : '1494790108755-2616b612b786'}?q=80&w=100" 
+                                         alt="${member}" class="team-avatar" style="width: 24px; height: 24px;" />
+                                `).join('')}
+                            </div>
+                            <span class="text-xs text-text-secondary">${project.completedTasks}/${project.tasks}</span>
+                        </div>
+                    </div>
+                `).join('');
+            });
+        }
+
+        // Render Timeline
+        function renderTimeline() {
+            const timeline = document.getElementById('projectTimeline');
+            const sortedProjects = [...projects].sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+            
+            timeline.innerHTML = sortedProjects.map(project => `
+                <div class="timeline-item">
+                    <div class="bg-white border border-border rounded-lg p-4">
+                        <div class="flex items-start justify-between mb-2">
+                            <div>
+                                <h4 class="font-semibold text-text-primary">${project.name}</h4>
+                                <p class="text-sm text-text-secondary">${project.department}</p>
+                            </div>
+                            <span class="status-badge status-${project.status}">${project.status}</span>
+                        </div>
+                        <p class="text-sm text-text-secondary mb-3">${project.description}</p>
+                        <div class="flex items-center gap-4 text-xs text-text-secondary">
+                            <span><i class="fas fa-calendar-start mr-1"></i>${new Date(project.startDate).toLocaleDateString()}</span>
+                            <span><i class="fas fa-calendar-check mr-1"></i>${new Date(project.endDate).toLocaleDateString()}</span>
+                            <span><i class="fas fa-chart-line mr-1"></i>${project.progress}%</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Charts
+        function renderCharts() {
+            // Completion Trends Chart
+            const completionCtx = document.getElementById('completionChart').getContext('2d');
+            new Chart(completionCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Projects Completed',
+                        data: [2, 3, 5, 4, 6, 9],
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // Department Performance Chart
+            const departmentCtx = document.getElementById('departmentChart').getContext('2d');
+            new Chart(departmentCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['IT', 'HR', 'Finance', 'Operations'],
+                    datasets: [{
+                        data: [35, 25, 20, 20],
+                        backgroundColor: ['#3B82F6', '#8B5CF6', '#F59E0B', '#10B981']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // KPI Achievement Chart
+            const kpiCtx = document.getElementById('kpiAchievementChart').getContext('2d');
+            new Chart(kpiCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Task Completion', 'Quality', 'Timeliness', 'Budget', 'Innovation'],
+                    datasets: [{
+                        label: 'Achievement %',
+                        data: [85, 78, 92, 88, 67],
+                        backgroundColor: ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, max: 100 }
+                    }
+                }
+            });
+
+            // Resource Allocation Chart
+            const resourceCtx = document.getElementById('resourceChart').getContext('2d');
+            new Chart(resourceCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Budget', 'Personnel', 'Time', 'Equipment', 'Technology'],
+                    datasets: [{
+                        label: 'Allocated',
+                        data: [80, 90, 70, 85, 95],
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: 'rgb(59, 130, 246)',
+                        pointBackgroundColor: 'rgb(59, 130, 246)'
+                    }, {
+                        label: 'Utilized',
+                        data: [75, 85, 68, 80, 88],
+                        backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                        borderColor: 'rgb(139, 92, 246)',
+                        pointBackgroundColor: 'rgb(139, 92, 246)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: { beginAtZero: true, max: 100 }
+                    }
+                }
+            });
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+
+        // Filter projects
+        function filterProjects(status) {
+            currentFilter = status;
+            document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
+            event.target.classList.add('active');
+            renderProjects(status);
+        }
+
+        // Search projects
+        function setupSearch() {
+            const searchInput = document.getElementById('searchProjects');
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                const filtered = projects.filter(p => 
+                    p.name.toLowerCase().includes(query) || 
+                    p.description.toLowerCase().includes(query) ||
+                    p.department.toLowerCase().includes(query)
+                );
+                
+                const container = document.querySelector('#overviewTab .grid');
+                if (query) {
+                    container.innerHTML = filtered.map(project => `
+                        <div class="project-card" onclick="openProjectDetails(${project.id})">
+                            <!-- Same project card HTML as in renderProjects -->
+                        </div>
+                    `).join('');
+                } else {
+                    renderProjects(currentFilter);
+                }
+            });
+        }
+
+        // Drag and drop
+        function drag(event, projectId) {
+            event.dataTransfer.setData('projectId', projectId);
+        }
+
+        // Modal functions
+        function openCreateProjectModal() {
+            document.getElementById('createProjectModal').classList.add('active');
+        }
+
+        function openProjectDetails(projectId) {
+            const project = projects.find(p => p.id === projectId);
+            const modal = document.getElementById('projectDetailsModal');
+            const content = document.getElementById('projectDetailsContent');
+            
+            content.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <h4 class="text-xl font-bold text-text-primary mb-2">${project.name}</h4>
+                            <p class="text-text-secondary">${project.description}</p>
+                        </div>
+                        <span class="status-badge status-${project.status}">${project.status.toUpperCase()}</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-primary-50 rounded-lg p-4">
+                            <div class="text-sm text-text-secondary mb-1">Progress</div>
+                            <div class="text-2xl font-bold text-primary">${project.progress}%</div>
+                        </div>
+                        <div class="bg-success-50 rounded-lg p-4">
+                            <div class="text-sm text-text-secondary mb-1">Tasks Completed</div>
+                            <div class="text-2xl font-bold text-success">${project.completedTasks}/${project.tasks}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <div class="text-sm font-medium text-text-primary mb-2">Department</div>
+                            <div class="text-text-secondary">${project.department}</div>
+                        </div>
+                        <div>
+                            <div class="text-sm font-medium text-text-primary mb-2">Priority</div>
+                            <span class="priority-${project.priority} status-badge">${project.priority.toUpperCase()}</span>
+                        </div>
+                        <div>
+                            <div class="text-sm font-medium text-text-primary mb-2">Start Date</div>
+                            <div class="text-text-secondary">${new Date(project.startDate).toLocaleDateString()}</div>
+                        </div>
+                        <div>
+                            <div class="text-sm font-medium text-text-primary mb-2">End Date</div>
+                            <div class="text-text-secondary">${new Date(project.endDate).toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="text-sm font-medium text-text-primary mb-3">Team Members</div>
+                        <div class="space-y-2">
+                            ${project.team.map(member => `
+                                <div class="flex items-center gap-3 p-2 bg-background rounded-lg">
+                                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=100" 
+                                         alt="${member}" class="w-8 h-8 rounded-full object-cover" />
+                                    <span class="text-text-primary">${member}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3 pt-4 border-t border-border">
+                        <button onclick="editProject(${project.id})" class="flex-1 bg-primary hover:bg-primary-700 text-white py-2 px-4 rounded-lg transition-colors">
+                            <i class="fas fa-edit mr-2"></i>Edit Project
+                        </button>
+                        <button onclick="assignKPI(${project.id})" class="flex-1 bg-accent hover:bg-accent-700 text-white py-2 px-4 rounded-lg transition-colors">
+                            <i class="fas fa-tasks mr-2"></i>Assign KPI
+                        </button>
+                        <button onclick="generateReport(${project.id})" class="flex-1 bg-secondary hover:bg-secondary-700 text-white py-2 px-4 rounded-lg transition-colors">
+                            <i class="fas fa-file-alt mr-2"></i>Report
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function createProject(event) {
+            event.preventDefault();
+            showNotification('Project created successfully!');
+            closeModal('createProjectModal');
+            setTimeout(() => location.reload(), 1500);
+        }
+
+        function editProject(id) {
+            showNotification('Opening project editor...');
+            closeModal('projectDetailsModal');
+        }
+
+        function assignKPI(id) {
+            showNotification('Opening KPI assignment...');
+            closeModal('projectDetailsModal');
+        }
+
+        function generateReport(id) {
+            showNotification('Generating project report...');
+        }
+
+        // Utility functions
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            notificationText.textContent = message;
+            notification.className = `notification ${type === 'error' ? 'bg-error' : 'bg-success'} show`;
+            setTimeout(() => notification.classList.remove('show'), 3000);
+        }
+
+        function switchLanguage(lang) {
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            showNotification(`Language switched to ${lang === 'en' ? 'English' : 'Hindi'}`);
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
+    
+    <script src="https://cdn.botpress.cloud/webchat/v3.3/inject.js"></script>
+<script src="https://files.bpcontent.cloud/2025/10/01/06/20251001065837-31L1AP49.js" defer></script>
+    
+</body>
+</html>

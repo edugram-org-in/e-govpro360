@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Feedback & Recognition - e-GovPro360</title>
+    <link rel="stylesheet" href="../css/main.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <style>
+        /* Custom cursor styles */
+        body {
+            cursor: none;
+        }
+        
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: var(--color-primary);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: all 0.1s ease;
+            mix-blend-mode: difference;
+        }
+        
+        .custom-cursor.hover {
+            width: 40px;
+            height: 40px;
+            background: var(--color-accent);
+        }
+        
+        .custom-cursor.click {
+            width: 15px;
+            height: 15px;
+        }
+        
+        /* Page animations */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        .slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Feedback card animations */
+        .feedback-card {
+            transition: all 0.3s ease;
+        }
+        
+        .feedback-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        /* Badge animations */
+        .badge-item {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .badge-item:hover {
+            transform: scale(1.05);
+        }
+        
+        .badge-earned {
+            animation: badgePulse 2s infinite;
+        }
+        
+        @keyframes badgePulse {
+            0%, 100% { 
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+            }
+            50% { 
+                box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+            }
+        }
+        
+        .badge-glow {
+            position: relative;
+        }
+        
+        .badge-glow::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(45deg, var(--color-accent), var(--color-primary), var(--color-accent));
+            border-radius: 50%;
+            z-index: -1;
+            animation: rotate 3s linear infinite;
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Progress bar animations */
+        .progress-fill {
+            transition: width 1s ease-out;
+        }
+        
+        /* Modal animations */
+        .modal {
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            transform: scale(0.8) translateY(20px);
+            transition: all 0.3s ease;
+        }
+        
+        .modal.active .modal-content {
+            transform: scale(1) translateY(0);
+        }
+        
+        /* Tab styles */
+        .tab-button {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--color-primary);
+            border-radius: 2px;
+        }
+        
+        /* Confetti animation */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: var(--color-accent);
+            animation: confetti-fall 3s linear infinite;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Language switcher */
+        .language-switcher {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .lang-btn {
+            padding: 6px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            background: white;
+            color: var(--color-text-secondary);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .lang-btn.active {
+            background: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+        
+        .lang-btn:hover:not(.active) {
+            border-color: var(--color-primary-300);
+            color: var(--color-primary);
+        }
+        
+        /* Responsive tabs */
+        @media (max-width: 768px) {
+            .desktop-layout {
+                display: none;
+            }
+            
+            .mobile-tabs {
+                display: block;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .desktop-layout {
+                display: block;
+            }
+            
+            .mobile-tabs {
+                display: none;
+            }
+        }
+    </style>
+<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fegovpro366174back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
+</head>
+<body class="bg-background min-h-screen font-inter">
+    <!-- Custom Cursor -->
+    <div class="custom-cursor"></div>
+    
+    <!-- Language Switcher -->
+    <div class="language-switcher">
+        <button class="lang-btn active" onclick="switchLanguage('en')">EN</button>
+        <button class="lang-btn" onclick="switchLanguage('hi')">हिं</button>
+    </div>
+    
+    <!-- Header -->
+    <header class="bg-surface shadow-sm border-b border-border fade-in">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-building text-primary-600 text-lg"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold text-text-primary">e-GovPro360</h1>
+                            <p class="text-xs text-text-secondary">Government Productivity</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Navigation -->
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="employee_dashboard.html" class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </a>
+                      <a href="user_task.html" class="text-primary font-medium">
+                        <i class="fas fa-award mr-2"></i>My Task
+                    </a>
+                    <a href="attendance_employee.html" class="text-primary font-medium border-b-2 border-primary pb-1">
+                        <i class="fas fa-calendar-check mr-2"></i>Attendance
+                    </a>
+                    <a href="feedback_recognition.html" class="text-primary font-medium">
+                        <i class="fas fa-award mr-2"></i>Recognition
+                    </a>
+                    <a href="settings.html" class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-cog mr-2"></i>Settings
+                    </a>
+                </nav>
+                
+                <!-- User Menu -->
+                <div class="flex items-center gap-4">
+                    <div class="hidden sm:flex items-center gap-3">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3" alt="Profile" class="w-8 h-8 rounded-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1584824486509-112e4181ff6b?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'; this.onerror=null;" />
+                        <div class="text-sm">
+                            <div class="font-medium text-text-primary">Rajesh Kumar</div>
+                            <div class="text-text-secondary">Senior Officer</div>
+                        </div>
+                    </div>
+                    <a href="login.html" class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Header -->
+        <div class="mb-8 slide-up">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-text-primary mb-2">Feedback & Recognition</h1>
+                    <p class="text-text-secondary">View feedback from managers and track your achievements</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="bg-accent-50 border border-accent-200 rounded-lg px-4 py-2">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-trophy text-accent-600"></i>
+                            <span class="text-sm font-medium text-accent-700">Achievement Score: 850</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Tabs -->
+        <div class="mobile-tabs mb-6">
+            <div class="flex bg-surface rounded-lg p-1 shadow-sm border border-border">
+                <button class="tab-button active flex-1 py-2 px-4 text-sm font-medium text-primary bg-primary-50 rounded-md transition-all" onclick="switchMobileTab('feedback')">
+                    <i class="fas fa-comments mr-2"></i>Feedback
+                </button>
+                <button class="tab-button flex-1 py-2 px-4 text-sm font-medium text-text-secondary rounded-md transition-all" onclick="switchMobileTab('recognition')">
+                    <i class="fas fa-award mr-2"></i>Recognition
+                </button>
+            </div>
+        </div>
+        
+        <!-- Desktop Layout -->
+        <div class="desktop-layout grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Feedback Section -->
+            <div class="feedback-section slide-up" style="animation-delay: 0.1s;">
+                <div class="bg-surface rounded-xl shadow-sm border border-border p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-semibold text-text-primary">Recent Feedback</h2>
+                        <div class="flex items-center gap-2">
+                            <select class="text-sm border border-border rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                <option>All Feedback</option>
+                                <option>This Week</option>
+                                <option>This Month</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Feedback Cards -->
+                    <div class="space-y-4 max-h-96 overflow-y-auto">
+                        <!-- Feedback Card 1 -->
+                        <div class="feedback-card bg-gradient-to-r from-primary-50 to-accent-50 rounded-lg p-4 border border-primary-200">
+                            <div class="flex items-start gap-4">
+                                <img src="https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="Manager" class="w-12 h-12 rounded-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1584824486509-112e4181ff6b?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'; this.onerror=null;" />
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div>
+                                            <h3 class="font-semibold text-text-primary">Dr. Priya Sharma</h3>
+                                            <p class="text-sm text-text-secondary">Department Head</p>
+                                        </div>
+                                        <div class="text-xs text-text-secondary">2 hours ago</div>
+                                    </div>
+                                    <p class="text-sm text-text-primary mb-3">
+                                        "Excellent work on the digital transformation project. Your attention to detail and proactive approach has significantly improved our department's efficiency. Keep up the outstanding performance!"
+                                    </p>
+                                    <div class="flex items-center gap-2">
+                                        <div class="flex items-center gap-1">
+                                            <i class="fas fa-star text-warning-500"></i>
+                                            <i class="fas fa-star text-warning-500"></i>
+                                            <i class="fas fa-star text-warning-500"></i>
+                                            <i class="fas fa-star text-warning-500"></i>
+                                            <i class="fas fa-star text-warning-500"></i>
+                                        </div>
+                                        <span class="text-xs text-text-secondary">Performance Rating</span>
+                                    </div>
+                                    <div class="flex gap-2 mt-3">
+                                        <button class="text-xs bg-primary text-white px-3 py-1 rounded-full hover:bg-primary-700 transition-colors" onclick="openFeedbackModal('respond', 1)">
+                                            <i class="fas fa-reply mr-1"></i>Respond
+                                        </button>
+                                        <button class="text-xs bg-accent text-white px-3 py-1 rounded-full hover:bg-accent-700 transition-colors">
+                                            <i class="fas fa-heart mr-1"></i>Thank
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Feedback Card 2 -->
+                        <div class="feedback-card bg-gradient-to-r from-accent-50 to-primary-50 rounded-lg p-4 border border-accent-200">
+                            <div class="flex items-start gap-4">
+                                <img src="https://images.pixabay.com/photos/2507/business-man-suit-work.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="Manager" class="w-12 h-12 rounded-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1584824486509-112e4181ff6b?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'; this.onerror=null;" />
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div>
+                                            <h3 class="font-semibold text-text-primary">Mr. Amit Verma</h3>
+                                            <p class="text-sm text-text-secondary">Project Manager</p>
+                                        </div>
+                                        <div class="text-xs text-text-secondary">1 day ago</div>
+                                    </div>
+                                    <p class="text-sm text-text-primary mb-3">
+                                        "Your innovative approach to solving the citizen service portal issues was remarkable. The solution you implemented has reduced processing time by 40%. Highly commendable work!"
+                                    </p>
+                                    <div class="flex items-center gap-2">
+                                        <div class="flex items-center gap-1">
+                                            <i class="fas fa-star text-warning-500"></i>
+                                            <i class="fas fa-star text-warning-500"></i>
+                                            <i class="fas fa-star text-warning-500"></i>
+                                            <i class="fas fa-star text-warning-500"></i>
+                                            <i class="far fa-star text-warning-300"></i>
+                                        </div>
+                                        <span class="text-xs text-text-secondary">Innovation Rating</span>
+                                    </div>
+                                    <div class="flex gap-2 mt-3">
+                                        <button class="text-xs bg-primary text-white px-3 py-1 rounded-full hover:bg-primary-700 transition-colors" onclick="openFeedbackModal('respond', 2)">
+                                            <i class="fas fa-reply mr-1"></i>Respond
+                                        </button>
+                                        <button class="text-xs bg-accent text-white px-3 py-1 rounded-full hover:bg-accent-700 transition-colors">
+                                            <i class="fas fa-heart mr-1"></i>Thank
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Feedback Card 3 -->
+                        <div class="feedback-card bg-gradient-to-r from-warning-50 to-primary-50 rounded-lg p-4 border border-warning-200">
+                            <div class="flex items-start gap-4">
+                                <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3" alt="Manager" class="w-12 h-12 rounded-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1584824486509-112e4181ff6b?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'; this.onerror=null;" />
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div>
+                                            <h3 class="font-semibold text-text-primary">Ms. Sunita Patel</h3>
+                                            <p class="text-sm text-text-secondary">Senior Supervisor</p>
+                                        </div>
+                                        <div class="text-xs text-text-secondary">3 days ago</div>
+                                    </div>
+                                    <p class="text-sm text-text-primary mb-3">
+                                        "Good progress on the quarterly reports. However, there's room for improvement in data visualization. Consider using more interactive charts for better stakeholder engagement."
+                                    </p>
+                                    <div class="flex items-center gap-2">
+                                        <div class="flex items-center gap-1">
+                                            <i class="fas fa-star text-warning-500"></i>
+                                            <i class="fas fa-star text-warning-500"></i>
+                                            <i class="fas fa-star text-warning-500"></i>
+                                            <i class="far fa-star text-warning-300"></i>
+                                            <i class="far fa-star text-warning-300"></i>
+                                        </div>
+                                        <span class="text-xs text-text-secondary">Improvement Needed</span>
+                                    </div>
+                                    <div class="flex gap-2 mt-3">
+                                        <button class="text-xs bg-primary text-white px-3 py-1 rounded-full hover:bg-primary-700 transition-colors" onclick="openFeedbackModal('respond', 3)">
+                                            <i class="fas fa-reply mr-1"></i>Respond
+                                        </button>
+                                        <button class="text-xs bg-warning text-white px-3 py-1 rounded-full hover:bg-warning-600 transition-colors">
+                                            <i class="fas fa-lightbulb mr-1"></i>Action Plan
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recognition Section -->
+            <div class="recognition-section slide-up" style="animation-delay: 0.2s;">
+                <div class="bg-surface rounded-xl shadow-sm border border-border p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-semibold text-text-primary">Achievements & Badges</h2>
+                        <div class="flex items-center gap-2">
+                            <select class="text-sm border border-border rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                <option>All Badges</option>
+                                <option>Recently Earned</option>
+                                <option>In Progress</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Badge Grid -->
+                    <div class="grid grid-cols-3 gap-4 mb-6">
+                        <!-- Earned Badge 1 -->
+                        <div class="badge-item badge-earned badge-glow text-center p-4 bg-gradient-to-b from-accent-50 to-accent-100 rounded-lg border-2 border-accent-200 cursor-pointer" onclick="openBadgeModal('innovator')">
+                            <div class="w-16 h-16 mx-auto mb-2 bg-accent text-white rounded-full flex items-center justify-center text-2xl">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <h3 class="text-sm font-semibold text-accent-700">Innovator</h3>
+                            <p class="text-xs text-accent-600">Earned</p>
+                        </div>
+                        
+                        <!-- Earned Badge 2 -->
+                        <div class="badge-item badge-earned text-center p-4 bg-gradient-to-b from-primary-50 to-primary-100 rounded-lg border-2 border-primary-200 cursor-pointer" onclick="openBadgeModal('teamplayer')">
+                            <div class="w-16 h-16 mx-auto mb-2 bg-primary text-white rounded-full flex items-center justify-center text-2xl">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h3 class="text-sm font-semibold text-primary-700">Team Player</h3>
+                            <p class="text-xs text-primary-600">Earned</p>
+                        </div>
+                        
+                        <!-- Earned Badge 3 -->
+                        <div class="badge-item badge-earned text-center p-4 bg-gradient-to-b from-warning-50 to-warning-100 rounded-lg border-2 border-warning-200 cursor-pointer" onclick="openBadgeModal('efficient')">
+                            <div class="w-16 h-16 mx-auto mb-2 bg-warning text-white rounded-full flex items-center justify-center text-2xl">
+                                <i class="fas fa-tachometer-alt"></i>
+                            </div>
+                            <h3 class="text-sm font-semibold text-warning-700">Efficient</h3>
+                            <p class="text-xs text-warning-600">Earned</p>
+                        </div>
+                        
+                        <!-- Locked Badge 1 -->
+                        <div class="badge-item text-center p-4 bg-secondary-50 rounded-lg border-2 border-secondary-200 opacity-60 cursor-pointer" onclick="openBadgeModal('mentor')">
+                            <div class="w-16 h-16 mx-auto mb-2 bg-secondary-300 text-secondary-500 rounded-full flex items-center justify-center text-2xl">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <h3 class="text-sm font-semibold text-secondary-600">Mentor</h3>
+                            <p class="text-xs text-secondary-500">Locked</p>
+                        </div>
+                        
+                        <!-- Locked Badge 2 -->
+                        <div class="badge-item text-center p-4 bg-secondary-50 rounded-lg border-2 border-secondary-200 opacity-60 cursor-pointer" onclick="openBadgeModal('leader')">
+                            <div class="w-16 h-16 mx-auto mb-2 bg-secondary-300 text-secondary-500 rounded-full flex items-center justify-center text-2xl">
+                                <i class="fas fa-crown"></i>
+                            </div>
+                            <h3 class="text-sm font-semibold text-secondary-600">Leader</h3>
+                            <p class="text-xs text-secondary-500">Locked</p>
+                        </div>
+                        
+                        <!-- Progress Badge -->
+                        <div class="badge-item text-center p-4 bg-gradient-to-b from-accent-50 to-accent-100 rounded-lg border-2 border-accent-200 cursor-pointer relative" onclick="openBadgeModal('expert')">
+                            <div class="w-16 h-16 mx-auto mb-2 bg-accent-300 text-accent-700 rounded-full flex items-center justify-center text-2xl relative">
+                                <i class="fas fa-star"></i>
+                                <div class="absolute inset-0 rounded-full border-4 border-accent-500" style="clip-path: polygon(0 0, 75% 0, 75% 100%, 0 100%)"></div>
+                            </div>
+                            <h3 class="text-sm font-semibold text-accent-700">Expert</h3>
+                            <p class="text-xs text-accent-600">75% Complete</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Milestone Progress -->
+                    <div class="bg-gradient-to-r from-primary-50 to-accent-50 rounded-lg p-4 border border-primary-200">
+                        <h3 class="font-semibold text-text-primary mb-3">Current Milestone</h3>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-text-primary">Department Excellence Award</span>
+                            <span class="text-sm font-medium text-primary">8/10 Goals</span>
+                        </div>
+                        <div class="w-full bg-secondary-200 rounded-full h-3 mb-3">
+                            <div class="progress-fill bg-gradient-to-r from-primary to-accent h-3 rounded-full" style="width: 80%"></div>
+                        </div>
+                        <div class="flex items-center justify-between text-xs text-text-secondary">
+                            <span>2 goals remaining</span>
+                            <button class="text-primary hover:text-primary-700 font-medium" onclick="triggerConfetti()">
+                                <i class="fas fa-trophy mr-1"></i>View Details
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Achievement Stats -->
+                    <div class="grid grid-cols-3 gap-4 mt-6">
+                        <div class="text-center p-3 bg-accent-50 rounded-lg border border-accent-200">
+                            <div class="text-2xl font-bold text-accent-600">12</div>
+                            <div class="text-xs text-accent-700">Badges Earned</div>
+                        </div>
+                        <div class="text-center p-3 bg-primary-50 rounded-lg border border-primary-200">
+                            <div class="text-2xl font-bold text-primary-600">850</div>
+                            <div class="text-xs text-primary-700">Total Points</div>
+                        </div>
+                        <div class="text-center p-3 bg-warning-50 rounded-lg border border-warning-200">
+                            <div class="text-2xl font-bold text-warning-600">#3</div>
+                            <div class="text-xs text-warning-700">Dept. Rank</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Tab Content -->
+        <div class="mobile-tabs">
+            <!-- Mobile Feedback Content -->
+            <div id="mobile-feedback" class="tab-content">
+                <div class="bg-surface rounded-xl shadow-sm border border-border p-6">
+                    <h2 class="text-xl font-semibold text-text-primary mb-4">Recent Feedback</h2>
+                    <div class="space-y-4">
+                        <!-- Mobile feedback cards would go here - same as desktop but single column -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mobile Recognition Content -->
+            <div id="mobile-recognition" class="tab-content hidden">
+                <div class="bg-surface rounded-xl shadow-sm border border-border p-6">
+                    <h2 class="text-xl font-semibold text-text-primary mb-4">Achievements & Badges</h2>
+                    <!-- Mobile recognition content would go here -->
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Feedback Response Modal -->
+    <div id="feedbackModal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="modal-content bg-surface rounded-xl shadow-lg max-w-md w-full mx-4 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-text-primary">Respond to Feedback</h3>
+                <button onclick="closeFeedbackModal()" class="text-text-secondary hover:text-text-primary">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">Your Response</label>
+                    <textarea class="w-full border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" rows="4" placeholder="Thank you for the feedback..."></textarea>
+                </div>
+                <div class="flex gap-3">
+                    <button class="flex-1 bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary-700 transition-colors">
+                        <i class="fas fa-paper-plane mr-2"></i>Send Response
+                    </button>
+                    <button onclick="closeFeedbackModal()" class="px-4 py-2 border border-border rounded-lg text-text-secondary hover:text-text-primary transition-colors">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Badge Detail Modal -->
+    <div id="badgeModal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="modal-content bg-surface rounded-xl shadow-lg max-w-md w-full mx-4 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-text-primary">Badge Details</h3>
+                <button onclick="closeBadgeModal()" class="text-text-secondary hover:text-text-primary">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="badgeContent" class="text-center">
+                <!-- Badge content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Custom cursor functionality
+        const cursor = document.querySelector('.custom-cursor');
+        let mouseX = 0;
+        let mouseY = 0;
+        let cursorX = 0;
+        let cursorY = 0;
+        
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+        
+        function animateCursor() {
+            cursorX += (mouseX - cursorX) * 0.1;
+            cursorY += (mouseY - cursorY) * 0.1;
+            cursor.style.left = cursorX + 'px';
+            cursor.style.top = cursorY + 'px';
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+        
+        // Cursor hover effects
+        document.querySelectorAll('button, a, .feedback-card, .badge-item').forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+        
+        document.addEventListener('mousedown', () => cursor.classList.add('click'));
+        document.addEventListener('mouseup', () => cursor.classList.remove('click'));
+        
+        // Language switcher
+        function switchLanguage(lang) {
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            console.log('Switched to language:', lang);
+        }
+        
+        // Mobile tab switching
+        function switchMobileTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active', 'text-primary', 'bg-primary-50');
+                btn.classList.add('text-text-secondary');
+            });
+            
+            event.target.classList.add('active', 'text-primary', 'bg-primary-50');
+            event.target.classList.remove('text-text-secondary');
+            
+            // Show/hide content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            document.getElementById(`mobile-${tab}`).classList.remove('hidden');
+        }
+        
+        // Feedback modal functions
+        function openFeedbackModal(action, feedbackId) {
+            document.getElementById('feedbackModal').classList.add('active');
+        }
+        
+        function closeFeedbackModal() {
+            document.getElementById('feedbackModal').classList.remove('active');
+        }
+        
+        // Badge modal functions
+        function openBadgeModal(badgeType) {
+            const badgeContent = document.getElementById('badgeContent');
+            const badges = {
+                innovator: {
+                    icon: 'fas fa-lightbulb',
+                    name: 'Innovator',
+                    description: 'Awarded for implementing creative solutions that improve efficiency.',
+                    earned: true,
+                    color: 'accent'
+                },
+                teamplayer: {
+                    icon: 'fas fa-users',
+                    name: 'Team Player',
+                    description: 'Recognized for excellent collaboration and team support.',
+                    earned: true,
+                    color: 'primary'
+                },
+                efficient: {
+                    icon: 'fas fa-tachometer-alt',
+                    name: 'Efficient',
+                    description: 'Achieved for consistently meeting deadlines and targets.',
+                    earned: true,
+                    color: 'warning'
+                },
+                mentor: {
+                    icon: 'fas fa-graduation-cap',
+                    name: 'Mentor',
+                    description: 'Guide 5 junior employees to unlock this badge.',
+                    earned: false,
+                    progress: '2/5',
+                    color: 'secondary'
+                },
+                leader: {
+                    icon: 'fas fa-crown',
+                    name: 'Leader',
+                    description: 'Lead 3 successful projects to earn this prestigious badge.',
+                    earned: false,
+                    progress: '1/3',
+                    color: 'secondary'
+                },
+                expert: {
+                    icon: 'fas fa-star',
+                    name: 'Expert',
+                    description: 'Complete advanced training modules and certifications.',
+                    earned: false,
+                    progress: '75%',
+                    color: 'accent'
+                }
+            };
+            
+            const badge = badges[badgeType];
+            const colorClass = badge.earned ? badge.color : 'secondary';
+            
+            badgeContent.innerHTML = `
+                <div class="w-24 h-24 mx-auto mb-4 bg-${colorClass} text-white rounded-full flex items-center justify-center text-4xl ${badge.earned ? 'badge-glow' : ''}">
+                    <i class="${badge.icon}"></i>
+                </div>
+                <h3 class="text-xl font-bold text-text-primary mb-2">${badge.name}</h3>
+                <p class="text-text-secondary mb-4">${badge.description}</p>
+                ${badge.earned ? 
+                    '<div class="bg-accent-50 border border-accent-200 rounded-lg p-3 mb-4"><div class="flex items-center justify-center gap-2 text-accent-700"><i class="fas fa-check-circle"></i><span class="font-medium">Badge Earned!</span></div></div>' :
+                    `<div class="bg-secondary-50 border border-secondary-200 rounded-lg p-3 mb-4"><div class="text-secondary-700 font-medium">Progress: ${badge.progress}</div></div>`
+                }
+                <div class="flex gap-3">
+                    ${badge.earned ? 
+                        '<button class="flex-1 bg-accent text-white py-2 px-4 rounded-lg hover:bg-accent-700 transition-colors"><i class="fas fa-share mr-2"></i>Share Achievement</button>' :
+                        '<button class="flex-1 bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary-700 transition-colors"><i class="fas fa-target mr-2"></i>View Requirements</button>'
+                    }
+                    <button onclick="closeBadgeModal()" class="px-4 py-2 border border-border rounded-lg text-text-secondary hover:text-text-primary transition-colors">Close</button>
+                </div>
+            `;
+            
+            document.getElementById('badgeModal').classList.add('active');
+        }
+        
+        function closeBadgeModal() {
+            document.getElementById('badgeModal').classList.remove('active');
+        }
+        
+        // Confetti animation
+        function triggerConfetti() {
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    createConfetti();
+                }, i * 50);
+            }
+        }
+        
+        function createConfetti() {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.backgroundColor = ['#2563EB', '#059669', '#F59E0B', '#EF4444'][Math.floor(Math.random() * 4)];
+            confetti.style.animationDelay = Math.random() * 2 + 's';
+            document.body.appendChild(confetti);
+            
+            setTimeout(() => {
+                confetti.remove();
+            }, 3000);
+        }
+        
+        // Close modals on outside click
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+            }
+        });
+        
+        // Initialize progress bar animation on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.querySelector('.progress-fill').style.width = '80%';
+            }, 1000);
+        });
+    </script>
+<script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+
+    <script src="https://cdn.botpress.cloud/webchat/v3.3/inject.js"></script>
+<script src="https://files.bpcontent.cloud/2025/10/01/06/20251001065837-31L1AP49.js" defer></script>
+    
+</body>
+</html>

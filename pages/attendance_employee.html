@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Attendance & Calendar - e-GovPro360</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <style>
+        /* Base CSS Variables matching your design system */
+        :root {
+            --color-primary: rgb(37, 99, 235);
+            --color-primary-50: rgb(239, 246, 255);
+            --color-primary-100: rgb(219, 234, 254);
+            --color-primary-400: rgb(96, 165, 250);
+            --color-primary-600: rgb(37, 99, 235);
+            --color-primary-700: rgb(29, 78, 216);
+            
+            --color-accent: rgb(236, 72, 153);
+            --color-accent-50: rgb(253, 242, 248);
+            --color-accent-100: rgb(252, 231, 243);
+            --color-accent-200: rgb(251, 207, 232);
+            --color-accent-300: rgb(249, 168, 212);
+            --color-accent-400: rgb(244, 114, 182);
+            --color-accent-600: rgb(236, 72, 153);
+            
+            --color-success: rgb(16, 185, 129);
+            --color-success-50: rgb(236, 253, 245);
+            --color-success-100: rgb(209, 250, 229);
+            --color-success-600: rgb(16, 185, 129);
+            --color-success-700: rgb(5, 150, 105);
+            
+            --color-warning: rgb(245, 158, 11);
+            --color-warning-50: rgb(255, 251, 235);
+            --color-warning-100: rgb(254, 243, 199);
+            --color-warning-600: rgb(245, 158, 11);
+            --color-warning-700: rgb(217, 119, 6);
+            
+            --color-error: rgb(239, 68, 68);
+            --color-error-50: rgb(254, 242, 242);
+            --color-error-100: rgb(254, 226, 226);
+            --color-error-600: rgb(239, 68, 68);
+            --color-error-700: rgb(220, 38, 38);
+            
+            --color-secondary-25: rgb(252, 252, 253);
+            --color-secondary-50: rgb(249, 250, 251);
+            --color-secondary-100: rgb(243, 244, 246);
+            --color-secondary-200: rgb(229, 231, 235);
+            --color-secondary-300: rgb(209, 213, 219);
+            --color-secondary-400: rgb(156, 163, 175);
+            --color-secondary-600: rgb(75, 85, 99);
+            
+            --color-background: rgb(249, 250, 251);
+            --color-surface: rgb(255, 255, 255);
+            --color-border: rgb(229, 231, 235);
+            
+            --color-text-primary: rgb(17, 24, 39);
+            --color-text-secondary: rgb(107, 114, 128);
+            
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text-primary);
+            cursor: none;
+        }
+        
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: var(--color-primary);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: all 0.1s ease;
+            mix-blend-mode: difference;
+        }
+        
+        .custom-cursor.hover {
+            width: 40px;
+            height: 40px;
+            background: var(--color-accent);
+        }
+        
+        /* Utility Classes */
+        .bg-background { background-color: var(--color-background); }
+        .bg-surface { background-color: var(--color-surface); }
+        .bg-primary { background-color: var(--color-primary); }
+        .bg-primary-50 { background-color: var(--color-primary-50); }
+        .bg-primary-100 { background-color: var(--color-primary-100); }
+        .bg-success { background-color: var(--color-success); }
+        .bg-success-50 { background-color: var(--color-success-50); }
+        .bg-success-100 { background-color: var(--color-success-100); }
+        .bg-error { background-color: var(--color-error); }
+        .bg-error-50 { background-color: var(--color-error-50); }
+        .bg-error-100 { background-color: var(--color-error-100); }
+        .bg-warning-50 { background-color: var(--color-warning-50); }
+        .bg-warning-100 { background-color: var(--color-warning-100); }
+        .bg-accent-50 { background-color: var(--color-accent-50); }
+        .bg-accent-100 { background-color: var(--color-accent-100); }
+        .bg-secondary-25 { background-color: var(--color-secondary-25); }
+        .bg-secondary-50 { background-color: var(--color-secondary-50); }
+        .bg-secondary-100 { background-color: var(--color-secondary-100); }
+        
+        .text-primary { color: var(--color-primary); }
+        .text-success { color: var(--color-success); }
+        .text-success-600 { color: var(--color-success-600); }
+        .text-error { color: var(--color-error); }
+        .text-error-600 { color: var(--color-error-600); }
+        .text-warning { color: var(--color-warning); }
+        .text-warning-600 { color: var(--color-warning-600); }
+        .text-accent { color: var(--color-accent); }
+        .text-accent-600 { color: var(--color-accent-600); }
+        .text-primary-600 { color: var(--color-primary-600); }
+        .text-secondary-600 { color: var(--color-secondary-600); }
+        .text-text-primary { color: var(--color-text-primary); }
+        .text-text-secondary { color: var(--color-text-secondary); }
+        
+        .border-border { border-color: var(--color-border); }
+        .border-primary { border-color: var(--color-primary); }
+        .border-success { border-color: var(--color-success); }
+        .border-success-200 { border-color: rgb(167, 243, 208); }
+        .border-error { border-color: var(--color-error); }
+        .border-warning { border-color: var(--color-warning); }
+        .border-accent { border-color: var(--color-accent); }
+        .border-accent-200 { border-color: var(--color-accent-200); }
+        
+        .hover\:bg-primary-700:hover { background-color: var(--color-primary-700); }
+        .hover\:bg-success-700:hover { background-color: var(--color-success-700); }
+        .hover\:bg-error-700:hover { background-color: var(--color-error-700); }
+        .hover\:bg-warning-700:hover { background-color: var(--color-warning-700); }
+        .hover\:bg-primary-50:hover { background-color: var(--color-primary-50); }
+        .hover\:bg-warning-50:hover { background-color: var(--color-warning-50); }
+        .hover\:bg-accent-50:hover { background-color: var(--color-accent-50); }
+        .hover\:bg-secondary-50:hover { background-color: var(--color-secondary-50); }
+        .hover\:bg-secondary-100:hover { background-color: var(--color-secondary-100); }
+        .hover\:border-primary:hover { border-color: var(--color-primary); }
+        .hover\:border-warning:hover { border-color: var(--color-warning); }
+        .hover\:border-accent:hover { border-color: var(--color-accent); }
+        .hover\:text-primary:hover { color: var(--color-primary); }
+        .hover\:text-text-primary:hover { color: var(--color-text-primary); }
+        
+        .rounded-full { border-radius: 9999px; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .rounded-xl { border-radius: 0.75rem; }
+        .rounded-2xl { border-radius: 1rem; }
+        
+        .shadow-sm { box-shadow: var(--shadow-sm); }
+        .shadow-md { box-shadow: var(--shadow-md); }
+        .shadow-lg { box-shadow: var(--shadow-lg); }
+        
+        .border { border-width: 1px; border-style: solid; }
+        .border-b { border-bottom-width: 1px; border-bottom-style: solid; }
+        .border-b-2 { border-bottom-width: 2px; border-bottom-style: solid; }
+        .border-4 { border-width: 4px; border-style: solid; }
+        
+        .p-2 { padding: 0.5rem; }
+        .p-3 { padding: 0.75rem; }
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+        .pb-1 { padding-bottom: 0.25rem; }
+        
+        .m-0 { margin: 0; }
+        .mb-1 { margin-bottom: 0.25rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mr-2 { margin-right: 0.5rem; }
+        
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+        .gap-8 { gap: 2rem; }
+        
+        .w-3 { width: 0.75rem; }
+        .w-4 { width: 1rem; }
+        .w-8 { width: 2rem; }
+        .w-10 { width: 2.5rem; }
+        .w-12 { width: 3rem; }
+        .w-full { width: 100%; }
+        .h-3 { height: 0.75rem; }
+        .h-4 { height: 1rem; }
+        .h-8 { height: 2rem; }
+        .h-10 { height: 2.5rem; }
+        .h-12 { height: 3rem; }
+        .h-16 { height: 4rem; }
+        .max-w-7xl { max-width: 80rem; }
+        .max-h-96 { max-height: 24rem; }
+        .min-h-screen { min-height: 100vh; }
+        
+        .flex { display: flex; }
+        .flex-1 { flex: 1 1 0%; }
+        .flex-col { flex-direction: column; }
+        .flex-wrap { flex-wrap: wrap; }
+        .items-center { align-items: center; }
+        .items-start { align-items: flex-start; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        
+        .grid { display: grid; }
+        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        
+        .hidden { display: none; }
+        .block { display: block; }
+        
+        .sticky { position: sticky; }
+        .fixed { position: fixed; }
+        .relative { position: relative; }
+        .absolute { position: absolute; }
+        .top-0 { top: 0; }
+        .top-4 { top: 1rem; }
+        .right-4 { right: 1rem; }
+        .-top-1 { top: -0.25rem; }
+        .-right-1 { right: -0.25rem; }
+        
+        .z-50 { z-index: 50; }
+        .z-1000 { z-index: 1000; }
+        .z-1001 { z-index: 1001; }
+        .z-9999 { z-index: 9999; }
+        
+        .overflow-hidden { overflow: hidden; }
+        .overflow-y-auto { overflow-y: auto; }
+        
+        .text-xs { font-size: 0.75rem; line-height: 1rem; }
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+        .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+        
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        
+        .text-left { text-align: left; }
+        .text-center { text-align: center; }
+        
+        .text-white { color: white; }
+        
+        .object-cover { object-fit: cover; }
+        
+        .transition-colors { transition-property: color, background-color, border-color; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+        .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+        
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        
+        .space-y-3 > * + * { margin-top: 0.75rem; }
+        .space-y-4 > * + * { margin-top: 1rem; }
+        
+        /* Calendar Styles */
+        .calendar-container {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+        
+        .calendar-header {
+            text-align: center;
+            font-weight: 600;
+            padding: 12px;
+            color: var(--color-text-secondary);
+            font-size: 14px;
+        }
+        
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            padding: 8px;
+            min-height: 80px;
+        }
+        
+        .calendar-day:hover {
+            border-color: var(--color-primary);
+            background: var(--color-primary-50);
+            transform: scale(1.05);
+        }
+        
+        .calendar-day.today {
+            background: var(--color-primary);
+            color: white;
+            font-weight: bold;
+        }
+        
+        .calendar-day.present {
+            background: var(--color-success-50);
+            border-color: var(--color-success);
+        }
+        
+        .calendar-day.absent {
+            background: var(--color-error-50);
+            border-color: var(--color-error);
+        }
+        
+        .calendar-day.leave {
+            background: var(--color-warning-50);
+            border-color: var(--color-warning);
+        }
+        
+        .calendar-day.holiday {
+            background: var(--color-accent-50);
+            border-color: var(--color-accent);
+        }
+        
+        .calendar-day.weekend {
+            background: var(--color-secondary-100);
+        }
+        
+        .calendar-day.other-month {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        
+        .day-number {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .day-status {
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        
+        .status-indicator {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            position: absolute;
+            top: 4px;
+            right: 4px;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--color-success);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            z-index: 1001;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-out;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        /* Time Tracker */
+        .time-tracker {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 24px;
+            background: linear-gradient(135deg, var(--color-primary-50), var(--color-accent-50));
+            border-radius: 16px;
+        }
+        
+        .time-display {
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--color-primary);
+            font-variant-numeric: tabular-nums;
+        }
+        
+        /* Form Elements */
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--color-border);
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            ring: 2px;
+            ring-color: var(--color-primary);
+            border-color: var(--color-primary);
+        }
+        
+        button {
+            cursor: pointer;
+            border: none;
+            font-weight: 500;
+        }
+        
+        /* Responsive */
+        @media (min-width: 768px) {
+            .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .md\:flex { display: flex; }
+            .md\:hidden { display: none; }
+        }
+        
+        @media (min-width: 1024px) {
+            .lg\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            .lg\:px-8 { padding-left: 2rem; padding-right: 2rem; }
+        }
+        
+        .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+    </style>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <style>
+        /* Base CSS Variables matching your design system */
+        :root {
+            --color-primary: rgb(37, 99, 235);
+            --color-primary-50: rgb(239, 246, 255);
+            --color-primary-100: rgb(219, 234, 254);
+            --color-primary-400: rgb(96, 165, 250);
+            --color-primary-600: rgb(37, 99, 235);
+            --color-primary-700: rgb(29, 78, 216);
+            
+            --color-accent: rgb(236, 72, 153);
+            --color-accent-50: rgb(253, 242, 248);
+            --color-accent-100: rgb(252, 231, 243);
+            --color-accent-200: rgb(251, 207, 232);
+            --color-accent-300: rgb(249, 168, 212);
+            --color-accent-400: rgb(244, 114, 182);
+            --color-accent-600: rgb(236, 72, 153);
+            
+            --color-success: rgb(16, 185, 129);
+            --color-success-50: rgb(236, 253, 245);
+            --color-success-100: rgb(209, 250, 229);
+            --color-success-600: rgb(16, 185, 129);
+            --color-success-700: rgb(5, 150, 105);
+            
+            --color-warning: rgb(245, 158, 11);
+            --color-warning-50: rgb(255, 251, 235);
+            --color-warning-100: rgb(254, 243, 199);
+            --color-warning-600: rgb(245, 158, 11);
+            --color-warning-700: rgb(217, 119, 6);
+            
+            --color-error: rgb(239, 68, 68);
+            --color-error-50: rgb(254, 242, 242);
+            --color-error-100: rgb(254, 226, 226);
+            --color-error-600: rgb(239, 68, 68);
+            --color-error-700: rgb(220, 38, 38);
+            
+            --color-secondary-25: rgb(252, 252, 253);
+            --color-secondary-50: rgb(249, 250, 251);
+            --color-secondary-100: rgb(243, 244, 246);
+            --color-secondary-200: rgb(229, 231, 235);
+            --color-secondary-300: rgb(209, 213, 219);
+            --color-secondary-400: rgb(156, 163, 175);
+            --color-secondary-600: rgb(75, 85, 99);
+            
+            --color-background: rgb(249, 250, 251);
+            --color-surface: rgb(255, 255, 255);
+            --color-border: rgb(229, 231, 235);
+            
+            --color-text-primary: rgb(17, 24, 39);
+            --color-text-secondary: rgb(107, 114, 128);
+            
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text-primary);
+            cursor: none;
+        }
+        
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: var(--color-primary);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: all 0.1s ease;
+            mix-blend-mode: difference;
+        }
+        
+        .custom-cursor.hover {
+            width: 40px;
+            height: 40px;
+            background: var(--color-accent);
+        }
+        
+        /* Utility Classes */
+        .bg-background { background-color: var(--color-background); }
+        .bg-surface { background-color: var(--color-surface); }
+        .bg-primary { background-color: var(--color-primary); }
+        .bg-primary-50 { background-color: var(--color-primary-50); }
+        .bg-primary-100 { background-color: var(--color-primary-100); }
+        .bg-success { background-color: var(--color-success); }
+        .bg-success-50 { background-color: var(--color-success-50); }
+        .bg-success-100 { background-color: var(--color-success-100); }
+        .bg-error { background-color: var(--color-error); }
+        .bg-error-50 { background-color: var(--color-error-50); }
+        .bg-error-100 { background-color: var(--color-error-100); }
+        .bg-warning-50 { background-color: var(--color-warning-50); }
+        .bg-warning-100 { background-color: var(--color-warning-100); }
+        .bg-accent-50 { background-color: var(--color-accent-50); }
+        .bg-accent-100 { background-color: var(--color-accent-100); }
+        .bg-secondary-25 { background-color: var(--color-secondary-25); }
+        .bg-secondary-50 { background-color: var(--color-secondary-50); }
+        .bg-secondary-100 { background-color: var(--color-secondary-100); }
+        
+        .text-primary { color: var(--color-primary); }
+        .text-success { color: var(--color-success); }
+        .text-success-600 { color: var(--color-success-600); }
+        .text-error { color: var(--color-error); }
+        .text-error-600 { color: var(--color-error-600); }
+        .text-warning { color: var(--color-warning); }
+        .text-warning-600 { color: var(--color-warning-600); }
+        .text-accent { color: var(--color-accent); }
+        .text-accent-600 { color: var(--color-accent-600); }
+        .text-primary-600 { color: var(--color-primary-600); }
+        .text-secondary-600 { color: var(--color-secondary-600); }
+        .text-text-primary { color: var(--color-text-primary); }
+        .text-text-secondary { color: var(--color-text-secondary); }
+        
+        .border-border { border-color: var(--color-border); }
+        .border-primary { border-color: var(--color-primary); }
+        .border-success { border-color: var(--color-success); }
+        .border-success-200 { border-color: rgb(167, 243, 208); }
+        .border-error { border-color: var(--color-error); }
+        .border-warning { border-color: var(--color-warning); }
+        .border-accent { border-color: var(--color-accent); }
+        .border-accent-200 { border-color: var(--color-accent-200); }
+        
+        .hover\:bg-primary-700:hover { background-color: var(--color-primary-700); }
+        .hover\:bg-success-700:hover { background-color: var(--color-success-700); }
+        .hover\:bg-error-700:hover { background-color: var(--color-error-700); }
+        .hover\:bg-warning-700:hover { background-color: var(--color-warning-700); }
+        .hover\:bg-primary-50:hover { background-color: var(--color-primary-50); }
+        .hover\:bg-warning-50:hover { background-color: var(--color-warning-50); }
+        .hover\:bg-accent-50:hover { background-color: var(--color-accent-50); }
+        .hover\:bg-secondary-50:hover { background-color: var(--color-secondary-50); }
+        .hover\:bg-secondary-100:hover { background-color: var(--color-secondary-100); }
+        .hover\:border-primary:hover { border-color: var(--color-primary); }
+        .hover\:border-warning:hover { border-color: var(--color-warning); }
+        .hover\:border-accent:hover { border-color: var(--color-accent); }
+        .hover\:text-primary:hover { color: var(--color-primary); }
+        .hover\:text-text-primary:hover { color: var(--color-text-primary); }
+        
+        .rounded-full { border-radius: 9999px; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .rounded-xl { border-radius: 0.75rem; }
+        .rounded-2xl { border-radius: 1rem; }
+        
+        .shadow-sm { box-shadow: var(--shadow-sm); }
+        .shadow-md { box-shadow: var(--shadow-md); }
+        .shadow-lg { box-shadow: var(--shadow-lg); }
+        
+        .border { border-width: 1px; border-style: solid; }
+        .border-b { border-bottom-width: 1px; border-bottom-style: solid; }
+        .border-b-2 { border-bottom-width: 2px; border-bottom-style: solid; }
+        .border-4 { border-width: 4px; border-style: solid; }
+        
+        .p-2 { padding: 0.5rem; }
+        .p-3 { padding: 0.75rem; }
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+        .pb-1 { padding-bottom: 0.25rem; }
+        
+        .m-0 { margin: 0; }
+        .mb-1 { margin-bottom: 0.25rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mr-2 { margin-right: 0.5rem; }
+        
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+        .gap-8 { gap: 2rem; }
+        
+        .w-3 { width: 0.75rem; }
+        .w-4 { width: 1rem; }
+        .w-8 { width: 2rem; }
+        .w-10 { width: 2.5rem; }
+        .w-12 { width: 3rem; }
+        .w-full { width: 100%; }
+        .h-3 { height: 0.75rem; }
+        .h-4 { height: 1rem; }
+        .h-8 { height: 2rem; }
+        .h-10 { height: 2.5rem; }
+        .h-12 { height: 3rem; }
+        .h-16 { height: 4rem; }
+        .max-w-7xl { max-width: 80rem; }
+        .max-h-96 { max-height: 24rem; }
+        .min-h-screen { min-height: 100vh; }
+        
+        .flex { display: flex; }
+        .flex-1 { flex: 1 1 0%; }
+        .flex-col { flex-direction: column; }
+        .flex-wrap { flex-wrap: wrap; }
+        .items-center { align-items: center; }
+        .items-start { align-items: flex-start; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        
+        .grid { display: grid; }
+        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        
+        .hidden { display: none; }
+        .block { display: block; }
+        
+        .sticky { position: sticky; }
+        .fixed { position: fixed; }
+        .relative { position: relative; }
+        .absolute { position: absolute; }
+        .top-0 { top: 0; }
+        .top-4 { top: 1rem; }
+        .right-4 { right: 1rem; }
+        .-top-1 { top: -0.25rem; }
+        .-right-1 { right: -0.25rem; }
+        
+        .z-50 { z-index: 50; }
+        .z-1000 { z-index: 1000; }
+        .z-1001 { z-index: 1001; }
+        .z-9999 { z-index: 9999; }
+        
+        .overflow-hidden { overflow: hidden; }
+        .overflow-y-auto { overflow-y: auto; }
+        
+        .text-xs { font-size: 0.75rem; line-height: 1rem; }
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+        .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+        
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        
+        .text-left { text-align: left; }
+        .text-center { text-align: center; }
+        
+        .text-white { color: white; }
+        
+        .object-cover { object-fit: cover; }
+        
+        .transition-colors { transition-property: color, background-color, border-color; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+        .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+        
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        
+        .space-y-3 > * + * { margin-top: 0.75rem; }
+        .space-y-4 > * + * { margin-top: 1rem; }
+        
+        /* Calendar Styles */
+        .calendar-container {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+        
+        .calendar-header {
+            text-align: center;
+            font-weight: 600;
+            padding: 12px;
+            color: var(--color-text-secondary);
+            font-size: 14px;
+        }
+        
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            padding: 8px;
+            min-height: 80px;
+        }
+        
+        .calendar-day:hover {
+            border-color: var(--color-primary);
+            background: var(--color-primary-50);
+            transform: scale(1.05);
+        }
+        
+        .calendar-day.today {
+            background: var(--color-primary);
+            color: white;
+            font-weight: bold;
+        }
+        
+        .calendar-day.present {
+            background: var(--color-success-50);
+            border-color: var(--color-success);
+        }
+        
+        .calendar-day.absent {
+            background: var(--color-error-50);
+            border-color: var(--color-error);
+        }
+        
+        .calendar-day.leave {
+            background: var(--color-warning-50);
+            border-color: var(--color-warning);
+        }
+        
+        .calendar-day.holiday {
+            background: var(--color-accent-50);
+            border-color: var(--color-accent);
+        }
+        
+        .calendar-day.weekend {
+            background: var(--color-secondary-100);
+        }
+        
+        .calendar-day.other-month {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        
+        .day-number {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .day-status {
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        
+        .status-indicator {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            position: absolute;
+            top: 4px;
+            right: 4px;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--color-success);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            z-index: 1001;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-out;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        /* Time Tracker */
+        .time-tracker {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 24px;
+            background: linear-gradient(135deg, var(--color-primary-50), var(--color-accent-50));
+            border-radius: 16px;
+        }
+        
+        .time-display {
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--color-primary);
+            font-variant-numeric: tabular-nums;
+        }
+        
+        /* Form Elements */
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--color-border);
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            ring: 2px;
+            ring-color: var(--color-primary);
+            border-color: var(--color-primary);
+        }
+        
+        button {
+            cursor: pointer;
+            border: none;
+            font-weight: 500;
+        }
+        
+        /* Responsive */
+        @media (min-width: 768px) {
+            .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .md\:flex { display: flex; }
+            .md\:hidden { display: none; }
+        }
+        
+        @media (min-width: 1024px) {
+            .lg\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            .lg\:px-8 { padding-left: 2rem; padding-right: 2rem; }
+        }
+        
+        .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+    </style>
+</head>
+
+<body class="bg-background min-h-screen">
+    <div class="custom-cursor"></div>
+    
+    <header class="bg-surface border-b border-border shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-building text-primary-600"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-text-primary">e-GovPro360</h1>
+                        <p class="text-xs text-text-secondary">Attendance & Calendar</p>
+                    </div>
+                </div>
+                
+                <nav class="hidden md:flex items-center gap-6">
+                    <a href="employee_dashboard.html" class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+
+                    </a>
+                     <a href="user_task.html" class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-award mr-2"></i>My Task
+                    </a>
+                    <a href="attendance_employee.html" class="text-primary font-medium border-b-2 border-primary pb-1">
+                        <i class="fas fa-calendar-check mr-2"></i>Attendance
+                    </a>
+                    <a href="feedback_recognition.html" class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-award mr-2"></i>Recognition
+                    </a>
+                     <a href="settings.html" class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-award mr-2"></i>Settings
+                    </a>
+                </nav>
+                
+                <div class="flex items-center gap-4">
+                    <button class="relative p-2 text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-bell"></i>
+                        <span class="absolute -top-1 -right-1 w-3 h-3 bg-error rounded-full"></span>
+                    </button>
+                    <div class="flex items-center gap-3">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&h=150&auto=format&fit=crop" alt="Profile" class="w-8 h-8 rounded-full object-cover" />
+                        <a href="login.html" class="text-text-secondary hover:text-primary transition-colors">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+      
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Quick Stats -->
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-surface rounded-xl shadow-md p-6 border border-border">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-success-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-check-circle text-success-600"></i>
+                    </div>
+                    <span class="text-3xl font-bold text-success">22</span>
+                </div>
+                <h3 class="font-semibold text-text-primary mb-1">Present Days</h3>
+                <p class="text-sm text-text-secondary">This month</p>
+            </div>
+            
+            <div class="bg-surface rounded-xl shadow-md p-6 border border-border">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-error-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-times-circle text-error-600"></i>
+                    </div>
+                    <span class="text-3xl font-bold text-error">1</span>
+                </div>
+                <h3 class="font-semibold text-text-primary mb-1">Absent Days</h3>
+                <p class="text-sm text-text-secondary">This month</p>
+            </div>
+            
+            <div class="bg-surface rounded-xl shadow-md p-6 border border-border">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-warning-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-plane-departure text-warning-600"></i>
+                    </div>
+                    <span class="text-3xl font-bold text-warning">12</span>
+                </div>
+                <h3 class="font-semibold text-text-primary mb-1">Leave Balance</h3>
+                <p class="text-sm text-text-secondary">Out of 18 days</p>
+            </div>
+            
+            <div class="bg-surface rounded-xl shadow-md p-6 border border-border">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-accent-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-percentage text-accent-600"></i>
+                    </div>
+                    <span class="text-3xl font-bold text-accent">95.6%</span>
+                </div>
+                <h3 class="font-semibold text-text-primary mb-1">Attendance Rate</h3>
+                <p class="text-sm text-text-secondary">Last 3 months</p>
+            </div>
+        </section>
+        
+        <!-- Time Tracker & Quick Actions -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div class="lg-col-span-2 bg-surface rounded-xl shadow-md border border-border overflow-hidden" style="grid-column: span 2;">
+                <div class="time-tracker">
+                    <div class="flex-1">
+                        <div class="text-sm text-text-secondary mb-2">Today's Work Hours</div>
+                        <div class="time-display" id="workTimer">08:32:45</div>
+                        <div class="text-sm text-text-secondary mt-2">Check-in: 09:00 AM • Check-out: 05:30 PM</div>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        <button onclick="checkIn()" class="bg-success hover:bg-success-700 text-white px-6 py-3 rounded-lg transition-colors">
+                            <i class="fas fa-sign-in-alt mr-2"></i>Check In
+                        </button>
+                        <button onclick="checkOut()" class="bg-error hover:bg-error-700 text-white px-6 py-3 rounded-lg transition-colors">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Check Out
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+    <section>
+            <div class="bg-surface rounded-xl shadow-md p-6 border border-border">
+                <h3 class="font-semibold text-text-primary mb-4">Quick Actions</h3>
+                <div class="space-y-3">
+                    <button onclick="openLeaveModal()" class="w-full p-3 border border-border rounded-lg hover:border-primary hover:bg-primary-50 transition-all text-left">
+                        <i class="fas fa-calendar-plus text-primary mr-2"></i>
+                        <span class="font-medium">Apply Leave</span>
+                    </button>
+                    <button onclick="openRegularizationModal()" class="w-full p-3 border border-border rounded-lg hover:border-warning hover:bg-warning-50 transition-all text-left">
+                        <i class="fas fa-clock text-warning mr-2"></i>
+                        <span class="font-medium">Regularize Attendance</span>
+                    </button>
+                    <button onclick="downloadReport()" class="w-full p-3 border border-border rounded-lg hover:border-accent hover:bg-accent-50 transition-all text-left">
+                        <i class="fas fa-download text-accent mr-2"></i>
+                        <span class="font-medium">Download Report</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+    <!-- Leave Application Modal -->
+    <div id="leaveModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold text-text-primary">Apply for Leave</h3>
+                <button onclick="closeLeaveModal()" class="text-text-secondary hover:text-text-primary">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="leaveForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">Leave Type</label>
+                    <select class="w-full p-3 border border-border rounded-lg" required>
+                        <option value="">Select leave type</option>
+                        <option value="casual">Casual Leave</option>
+                        <option value="sick">Sick Leave</option>
+                        <option value="personal">Personal Leave</option>
+                        <option value="emergency">Emergency Leave</option>
+                    </select>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">From Date</label>
+                        <input type="date" class="w-full p-3 border border-border rounded-lg" required />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">To Date</label>
+                        <input type="date" class="w-full p-3 border border-border rounded-lg" required />
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">Reason</label>
+                    <textarea class="w-full p-3 border border-border rounded-lg" rows="4" placeholder="Enter reason for leave..." required></textarea>
+                </div>
+                
+                <div class="flex gap-3 pt-4">
+                    <button type="submit" class="flex-1 bg-primary hover:bg-primary-700 text-white py-3 px-4 rounded-lg transition-colors">
+                        <i class="fas fa-paper-plane mr-2"></i>Submit Application
+                    </button>
+                    <button type="button" onclick="closeLeaveModal()" class="px-6 py-3 border border-border rounded-lg hover:bg-secondary-50 transition-colors">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Regularization Modal -->
+    <div id="regularizationModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold text-text-primary">Regularize Attendance</h3>
+                <button onclick="closeRegularizationModal()" class="text-text-secondary hover:text-text-primary">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="regularizationForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">Date</label>
+                    <input type="date" class="w-full p-3 border border-border rounded-lg" required />
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Check-in Time</label>
+                        <input type="time" class="w-full p-3 border border-border rounded-lg" required />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Check-out Time</label>
+                        <input type="time" class="w-full p-3 border border-border rounded-lg" required />
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">Reason</label>
+                    <textarea class="w-full p-3 border border-border rounded-lg" rows="4" placeholder="Explain why regularization is needed..." required></textarea>
+                </div>
+                
+                <div class="flex gap-3 pt-4">
+                    <button type="submit" class="flex-1 bg-warning hover:bg-warning-700 text-white py-3 px-4 rounded-lg transition-colors">
+                        <i class="fas fa-check mr-2"></i>Submit Request
+                    </button>
+                    <button type="button" onclick="closeRegularizationModal()" class="px-6 py-3 border border-border rounded-lg hover:bg-secondary-50 transition-colors">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+     </main>
+        <!-- Calendar Section -->
+        <section class="bg-surface rounded-xl shadow-md border border-border mb-8">
+            <div class="p-6 border-b border-border">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-text-primary">Attendance Calendar</h2>
+                    <div class="flex items-center gap-4">
+                        <button onclick="previousMonth()" class="p-2 hover:bg-secondary-100 rounded-lg transition-colors">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span class="font-semibold text-text-primary" id="currentMonth">October 2025</span>
+                        <button onclick="nextMonth()" class="p-2 hover:bg-secondary-100 rounded-lg transition-colors">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex flex-wrap gap-4 mt-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 bg-success-100 border border-success rounded"></div>
+                        <span class="text-sm text-text-secondary">Present</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 bg-error-100 border border-error rounded"></div>
+                        <span class="text-sm text-text-secondary">Absent</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 bg-warning-100 border border-warning rounded"></div>
+                        <span class="text-sm text-text-secondary">Leave</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 bg-accent-100 border border-accent rounded"></div>
+                        <span class="text-sm text-text-secondary">Holiday</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 bg-secondary-100 rounded"></div>
+                        <span class="text-sm text-text-secondary">Weekend</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div class="calendar-container" id="calendar">
+                    <div class="calendar-header">Sun</div>
+                    <div class="calendar-header">Mon</div>
+                    <div class="calendar-header">Tue</div>
+                    <div class="calendar-header">Wed</div>
+                    <div class="calendar-header">Thu</div>
+                    <div class="calendar-header">Fri</div>
+                    <div class="calendar-header">Sat</div>
+                </div>
+            </div>
+        </section>
+        
+    
+        <!-- Upcoming Holidays & Leave History -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-surface rounded-xl shadow-md border border-border">
+                <div class="p-6 border-b border-border">
+                    <h3 class="text-lg font-semibold text-text-primary">Upcoming Holidays</h3>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div class="flex items-center gap-4 p-4 bg-accent-50 rounded-lg border border-accent-200">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-accent">02</div>
+                            <div class="text-sm text-text-secondary">Oct</div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-text-primary">Gandhi Jayanti</div>
+                            <div class="text-sm text-text-secondary">National Holiday</div>
+                        </div>
+                        <i class="fas fa-calendar-day text-accent"></i>
+                    </div>
+                    
+                    <div class="flex items-center gap-4 p-4 bg-secondary-50 rounded-lg">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-secondary-600">12</div>
+                            <div class="text-sm text-text-secondary">Oct</div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-text-primary">Dussehra</div>
+                            <div class="text-sm text-text-secondary">Festival Holiday</div>
+                        </div>
+                        <i class="fas fa-calendar-day text-secondary-600"></i>
+                    </div>
+                    
+                    <div class="flex items-center gap-4 p-4 bg-secondary-50 rounded-lg">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-secondary-600">31</div>
+                            <div class="text-sm text-text-secondary">Oct</div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-text-primary">Diwali</div>
+                            <div class="text-sm text-text-secondary">Festival Holiday</div>
+                        </div>
+                        <i class="fas fa-calendar-day text-secondary-600"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Leave History -->
+            <div class="bg-surface rounded-xl shadow-md border border-border">
+                <div class="p-6 border-b border-border">
+                    <h3 class="text-lg font-semibold text-text-primary">Leave History</h3>
+                </div>
+                <div class="max-h-96 overflow-y-auto">
+                    <table class="w-full">
+                        <thead class="bg-secondary-50 sticky top-0">
+                            <tr>
+                                <th class="text-left p-4 text-sm font-medium text-text-secondary">Date</th>
+                                <th class="text-left p-4 text-sm font-medium text-text-secondary">Type</th>
+                                <th class="text-left p-4 text-sm font-medium text-text-secondary">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-border">
+                                <td class="p-4 text-sm text-text-secondary">28-30 Sep 2025</td>
+                                <td class="p-4 text-sm text-text-primary">Sick Leave</td>
+                                <td class="p-4">
+                                    <span class="px-2 py-1 bg-success-100 text-success-600 rounded-full text-xs">Approved</span>
+                                </td>
+                            </tr>
+                            <tr class="bg-secondary-25 border-b border-border">
+                                <td class="p-4 text-sm text-text-secondary">15 Sep 2025</td>
+                                <td class="p-4 text-sm text-text-primary">Casual Leave</td>
+                                <td class="p-4">
+                                    <span class="px-2 py-1 bg-success-100 text-success-600 rounded-full text-xs">Approved</span>
+                                </td>
+                            </tr>
+                            <tr class="border-b border-border">
+                                <td class="p-4 text-sm text-text-secondary">05 Sep 2025</td>
+                                <td class="p-4 text-sm text-text-primary">Personal Leave</td>
+                                <td class="p-4">
+                                    <span class="px-2 py-1 bg-success-100 text-success-600 rounded-full text-xs">Approved</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+ 
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <i class="fas fa-check-circle mr-2"></i>
+        <span id="toastMessage">Action completed successfully!</span>
+    </div>
+      
+    
+  
+            <div class="custom-cursor"></div>
+    
+    <script>
+        // Custom cursor
+        const cursor = document.querySelector('.custom-cursor');
+        let mouseX = 0, mouseY = 0, cursorX = 0, cursorY = 0;
+        
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+        
+        function animateCursor() {
+            cursorX += (mouseX - cursorX) * 0.1;
+            cursorY += (mouseY - cursorY) * 0.1;
+            cursor.style.left = cursorX + 'px';
+            cursor.style.top = cursorY + 'px';
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+        
+        document.querySelectorAll('button, a, input, textarea, select').forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+        
+        // Calendar data
+        let currentMonth = 9; // October (0-indexed)
+        let currentYear = 2025;
+        
+        const attendanceData = {
+            '2025-10-01': { status: 'today', time: '09:00 AM - 05:30 PM' },
+            '2025-10-02': { status: 'holiday', name: 'Gandhi Jayanti' },
+            '2025-09-30': { status: 'present', time: '09:15 AM - 05:45 PM' },
+            '2025-09-29': { status: 'present', time: '09:00 AM - 05:30 PM' },
+            '2025-09-28': { status: 'leave', type: 'Sick Leave' },
+            '2025-09-27': { status: 'present', time: '08:55 AM - 05:35 PM' },
+            '2025-09-26': { status: 'present', time: '09:10 AM - 05:40 PM' },
+            '2025-09-25': { status: 'absent', reason: 'No check-in' },
+            '2025-09-24': { status: 'present', time: '09:00 AM - 05:30 PM' },
+            '2025-09-23': { status: 'present', time: '09:05 AM - 05:35 PM' }
+        };
+        
+        function generateCalendar() {
+            const calendar = document.getElementById('calendar');
+            const monthNames = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"];
+            
+            document.getElementById('currentMonth').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+            
+            // Remove existing days
+            const existingDays = calendar.querySelectorAll('.calendar-day');
+            existingDays.forEach(day => day.remove());
+            
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const daysInPrevMonth = new Date(currentYear, currentMonth, 0).getDate();
+            
+            // Previous month days
+            for (let i = firstDay - 1; i >= 0; i--) {
+                const day = daysInPrevMonth - i;
+                const dayEl = createDayElement(day, 'other-month');
+                calendar.appendChild(dayEl);
+            }
+            
+            // Current month days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const attendance = attendanceData[dateStr];
+                const dayOfWeek = new Date(currentYear, currentMonth, day).getDay();
+                
+                let status = '';
+                if (attendance) {
+                    status = attendance.status;
+                } else if (dayOfWeek === 0 || dayOfWeek === 6) {
+                    status = 'weekend';
+                }
+                
+                const dayEl = createDayElement(day, status, attendance);
+                calendar.appendChild(dayEl);
+            }
+            
+            // Next month days
+            const totalCells = calendar.children.length - 7; // Subtract headers
+            const remainingCells = 42 - totalCells;
+            for (let day = 1; day <= remainingCells; day++) {
+                const dayEl = createDayElement(day, 'other-month');
+                calendar.appendChild(dayEl);
+            }
+        }
+        
+        function createDayElement(day, status, data) {
+            const dayEl = document.createElement('div');
+            dayEl.className = `calendar-day ${status}`;
+            
+            const dayNumber = document.createElement('div');
+            dayNumber.className = 'day-number';
+            dayNumber.textContent = day;
+            dayEl.appendChild(dayNumber);
+            
+            if (data) {
+                const dayStatus = document.createElement('div');
+                dayStatus.className = 'day-status';
+                
+                switch(status) {
+                    case 'present':
+                        dayStatus.textContent = 'P';
+                        break;
+                    case 'absent':
+                        dayStatus.textContent = 'A';
+                        break;
+                    case 'leave':
+                        dayStatus.textContent = 'L';
+                        break;
+                    case 'holiday':
+                        dayStatus.textContent = 'H';
+                        break;
+                    case 'today':
+                        dayStatus.textContent = 'Today';
+                        break;
+                }
+                
+                dayEl.appendChild(dayStatus);
+                
+                dayEl.addEventListener('click', () => {
+                    showDayDetails(day, data);
+                });
+            }
+            
+            return dayEl;
+        }
+        
+        function showDayDetails(day, data) {
+            let details = `Date: ${day} ${document.getElementById('currentMonth').textContent}\n`;
+            details += `Status: ${data.status.toUpperCase()}\n`;
+            
+            if (data.time) details += `Time: ${data.time}\n`;
+            if (data.type) details += `Type: ${data.type}\n`;
+            if (data.name) details += `Holiday: ${data.name}\n`;
+            if (data.reason) details += `Reason: ${data.reason}\n`;
+            
+            alert(details);
+        }
+        
+        function previousMonth() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            generateCalendar();
+        }
+        
+        function nextMonth() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            generateCalendar();
+        }
+        
+        // Modal functions
+        function openLeaveModal() {
+            document.getElementById('leaveModal').classList.add('show');
+        }
+        
+        function closeLeaveModal() {
+            document.getElementById('leaveModal').classList.remove('show');
+        }
+        
+        function openRegularizationModal() {
+            document.getElementById('regularizationModal').classList.add('show');
+        }
+        
+        function closeRegularizationModal() {
+            document.getElementById('regularizationModal').classList.remove('show');
+        }
+        
+        // Action functions
+        function checkIn() {
+            showToast('Checked in successfully at ' + new Date().toLocaleTimeString());
+        }
+        
+        function checkOut() {
+            showToast('Checked out successfully at ' + new Date().toLocaleTimeString());
+        }
+        
+        function downloadReport() {
+            showToast('Downloading attendance report...');
+        }
+        
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Form submissions
+        document.getElementById('leaveForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            showToast('Leave application submitted successfully!');
+            closeLeaveModal();
+            this.reset();
+        });
+        
+        document.getElementById('regularizationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            showToast('Regularization request submitted successfully!');
+            closeRegularizationModal();
+            this.reset();
+        });
+        
+        // Close modals on outside click
+        document.getElementById('leaveModal').addEventListener('click', function(e) {
+            if (e.target === this) closeLeaveModal();
+        });
+        
+        document.getElementById('regularizationModal').addEventListener('click', function(e) {
+            if (e.target === this) closeRegularizationModal();
+        });
+        
+        // Work timer animation
+        function updateWorkTimer() {
+            const timer = document.getElementById('workTimer');
+            let hours = 8, minutes = 32, seconds = 45;
+            
+            setInterval(() => {
+                seconds++;
+                if (seconds >= 60) {
+                    seconds = 0;
+                    minutes++;
+                }
+                if (minutes >= 60) {
+                    minutes = 0;
+                    hours++;
+                }
+                
+                timer.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }, 1000);
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            generateCalendar();
+            updateWorkTimer();
+        });
+    </script>
+                
+    <script src="https://cdn.botpress.cloud/webchat/v3.3/inject.js"></script>
+<script src="https://files.bpcontent.cloud/2025/10/01/06/20251001065837-31L1AP49.js" defer></script>
+    
+  
+  
+</body>
+</html>

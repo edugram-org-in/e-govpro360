@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - e-GovPro360</title>
+    <link rel="stylesheet" href="../css/main.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <style>
+        /* Custom cursor styles */
+        body {
+            cursor: none;
+        }
+        
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: var(--color-primary);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: all 0.1s ease;
+            mix-blend-mode: difference;
+        }
+        
+        .custom-cursor.hover {
+            width: 40px;
+            height: 40px;
+            background: var(--color-accent);
+        }
+        
+        .custom-cursor.click {
+            width: 15px;
+            height: 15px;
+        }
+        
+        /* Floating label animations */
+        .floating-label {
+            position: relative;
+        }
+        
+        .floating-label input {
+            width: 100%;
+            padding: 16px 12px 8px 12px;
+            border: 2px solid var(--color-border);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: transparent;
+        }
+        
+        .floating-label label {
+            position: absolute;
+            left: 12px;
+            top: 16px;
+            font-size: 16px;
+            color: var(--color-text-secondary);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            background: white;
+            padding: 0 4px;
+        }
+        
+        .floating-label input:focus,
+        .floating-label input:not(:placeholder-shown) {
+            border-color: var(--color-primary);
+            outline: none;
+        }
+        
+        .floating-label input:focus + label,
+        .floating-label input:not(:placeholder-shown) + label {
+            top: -8px;
+            font-size: 12px;
+            color: var(--color-primary);
+            font-weight: 500;
+        }
+        
+        /* Role selection styles */
+        .role-toggle {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .role-option {
+            position: relative;
+            display: block;
+            padding: 16px 20px;
+            margin: 8px 0;
+            border: 2px solid var(--color-border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .role-option:hover {
+            border-color: var(--color-primary-300);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .role-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .role-option input[type="radio"]:checked + .role-content {
+            color: var(--color-primary);
+        }
+        
+        .role-option input[type="radio"]:checked {
+            border-color: var(--color-primary);
+        }
+        
+        .role-option:has(input[type="radio"]:checked) {
+            border-color: var(--color-primary);
+            background: var(--color-primary-50);
+        }
+        
+        /* Loading animation */
+        .loading {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        /* Page animations */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        .slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Government badge styles */
+        .security-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            background: var(--color-success-50);
+            border: 1px solid var(--color-success-200);
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--color-success-700);
+            font-weight: 500;
+        }
+        
+        /* Language switcher */
+        .language-switcher {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .lang-btn {
+            padding: 6px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            background: white;
+            color: var(--color-text-secondary);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .lang-btn.active {
+            background: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+        
+        .lang-btn:hover:not(.active) {
+            border-color: var(--color-primary-300);
+            color: var(--color-primary);
+        }
+    </style>
+<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fegovpro366174back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
+</head>
+<body class="bg-background min-h-screen font-inter">
+    <!-- Custom Cursor -->
+    <div class="custom-cursor"></div>
+    
+    <!-- Language Switcher -->
+    <div class="language-switcher">
+        <button class="lang-btn active" onclick="switchLanguage('en')">EN</button>
+        <button class="lang-btn" onclick="switchLanguage('hi')">हिं</button>
+    </div>
+    
+    <!-- Main Container -->
+    <div class="min-h-screen flex items-center justify-center px-4 py-8 relative">
+        <!-- Background Pattern -->
+        <div class="absolute inset-0 opacity-5">
+            <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" stroke-width="1"/>
+                    </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#grid)"/>
+            </svg>
+        </div>
+        
+        <!-- Login Form Container -->
+        <div class="w-full max-w-md relative fade-in">
+            <!-- Government Header -->
+            <div class="text-center mb-8 slide-up">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
+                    <i class="fas fa-building text-2xl text-primary-600"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-text-primary mb-2">e-GovPro360</h1>
+                <p class="text-text-secondary">Government Employee Productivity Management</p>
+                
+                <!-- Security Badges -->
+                <div class="flex justify-center gap-3 mt-4">
+                    <div class="security-badge">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>SSL Secured</span>
+                    </div>
+                    <div class="security-badge">
+                        <i class="fas fa-certificate"></i>
+                        <span>Gov Certified</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Login Form -->
+            <div class="bg-surface rounded-2xl shadow-lg p-8 border border-border slide-up" style="animation-delay: 0.2s;">
+                <form id="loginForm" class="space-y-6">
+                    <!-- Username Field -->
+                    <div class="floating-label">
+                        <input type="text" id="username" name="username" placeholder=" " required class="w-full" />
+                        <label for="username">Username / Employee ID</label>
+                    </div>
+                    
+                    <!-- Password Field -->
+                    <div class="floating-label">
+                        <input type="password" id="password" name="password" placeholder=" " required class="w-full" />
+                        <label for="password">Password</label>
+                    </div>
+                    
+                    <!-- Role Selection -->
+                    <div class="space-y-3">
+                        <label class="block text-sm font-medium text-text-primary mb-3">Select Your Role</label>
+                        
+                        <div class="role-toggle">
+                            <label class="role-option">
+                                <input type="radio" name="role" value="employee" checked />
+                                <div class="role-content">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-user text-primary-600"></i>
+                                        </div>
+                                        <div class="text-left">
+                                            <div class="font-medium text-text-primary">Employee</div>
+                                            <div class="text-sm text-text-secondary">Access your dashboard and tasks</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
+                            
+                            <label class="role-option">
+                                <input type="radio" name="role" value="admin" />
+                                <div class="role-content">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 bg-accent-100 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-user-shield text-accent-600"></i>
+                                        </div>
+                                        <div class="text-left">
+                                            <div class="font-medium text-text-primary">Administrator</div>
+                                            <div class="text-sm text-text-secondary">Manage employees and analytics</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Login Button -->
+                    <button type="submit" id="loginBtn" class="w-full bg-primary hover:bg-primary-700 text-white font-medium py-4 px-6 rounded-xl transition-all duration-200 hover:shadow-lg hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 min-h-44">
+                        <span id="loginText">
+                            <i class="fas fa-sign-in-alt mr-2"></i>
+                            Sign In to Dashboard
+                        </span>
+                        <span id="loadingText" class="hidden">
+                            <i class="fas fa-spinner fa-spin mr-2"></i>
+                            Authenticating...
+                        </span>
+                    </button>
+                    
+                    <!-- Additional Links -->
+                    <div class="text-center space-y-2">
+                        <a href="javascript:void(0)" class="text-sm text-primary hover:text-primary-700 transition-colors">
+                            Forgot Password?
+                        </a>
+                        <div class="text-xs text-text-secondary">
+                            Need help? Contact IT Support: <a href="mailto:support@egov.in" class="text-primary hover:underline">support@egov.in</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Footer -->
+            <div class="text-center mt-8 text-xs text-text-secondary slide-up" style="animation-delay: 0.4s;">
+                <p>© 2025 Government of India. All Rights Reserved.</p>
+                <p class="mt-1">Powered by Digital India Initiative</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Custom cursor functionality
+        const cursor = document.querySelector('.custom-cursor');
+        let mouseX = 0;
+        let mouseY = 0;
+        let cursorX = 0;
+        let cursorY = 0;
+        
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+        
+        function animateCursor() {
+            cursorX += (mouseX - cursorX) * 0.1;
+            cursorY += (mouseY - cursorY) * 0.1;
+            cursor.style.left = cursorX + 'px';
+            cursor.style.top = cursorY + 'px';
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+        
+        // Cursor hover effects
+        document.querySelectorAll('button, a, input, label').forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+        
+        document.addEventListener('mousedown', () => cursor.classList.add('click'));
+        document.addEventListener('mouseup', () => cursor.classList.remove('click'));
+        
+        // Language switcher
+        function switchLanguage(lang) {
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Here you would implement actual language switching
+            console.log('Switched to language:', lang);
+        }
+        
+        // Form submission
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const role = document.querySelector('input[name="role"]:checked').value;
+            
+            // Show loading state
+            const loginBtn = document.getElementById('loginBtn');
+            const loginText = document.getElementById('loginText');
+            const loadingText = document.getElementById('loadingText');
+            
+            loginBtn.classList.add('loading');
+            loginText.classList.add('hidden');
+            loadingText.classList.remove('hidden');
+            loginBtn.disabled = true;
+            
+            // Mock authentication
+            setTimeout(() => {
+                // Mock credentials validation
+                const validCredentials = {
+                    employee: { username: 'emp001', password: 'employee123' },
+                    admin: { username: 'admin001', password: 'admin123' }
+                };
+                
+                if (validCredentials[role] && 
+                    validCredentials[role].username === username && 
+                    validCredentials[role].password === password) {
+                    
+                    // Success - redirect based on role
+                    if (role === 'employee') {
+                        window.location.href = 'employee_dashboard.html';
+                    } else {
+                        window.location.href = 'admin_dashboard.html';
+                    }
+                } else {
+                    // Error handling
+                    alert('Invalid credentials. Please try again.\n\nDemo Credentials:\nEmployee - Username: emp001, Password: employee123\nAdmin - Username: admin001, Password: admin123');
+                    
+                    // Reset button state
+                    loginBtn.classList.remove('loading');
+                    loginText.classList.remove('hidden');
+                    loadingText.classList.add('hidden');
+                    loginBtn.disabled = false;
+                }
+            }, 2000);
+        });
+        
+        // Role selection animation
+        document.querySelectorAll('input[name="role"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.querySelectorAll('.role-option').forEach(option => {
+                    option.style.transform = 'scale(1)';
+                });
+                
+                this.closest('.role-option').style.transform = 'scale(1.02)';
+                setTimeout(() => {
+                    this.closest('.role-option').style.transform = 'scale(1)';
+                }, 200);
+            });
+        });
+        
+        // Auto-fill demo credentials on double click
+        document.getElementById('username').addEventListener('dblclick', function() {
+            const role = document.querySelector('input[name="role"]:checked').value;
+            if (role === 'employee') {
+                this.value = 'emp001';
+                document.getElementById('password').value = 'employee123';
+            } else {
+                this.value = 'admin001';
+                document.getElementById('password').value = 'admin123';
+            }
+            
+            // Trigger label animation
+            this.dispatchEvent(new Event('input'));
+            document.getElementById('password').dispatchEvent(new Event('input'));
+        });
+    </script>
+<script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+</body>
+</html>
