@@ -78,7 +78,7 @@ e-govpro360/
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/e-govpro360.git
+git clone https://github.com/edugram-org-in/e-govpro360.git
 cd e-govpro360
 ```
 
@@ -106,6 +106,16 @@ npm start
 * **Vanilla JS**
 * **AI Integration**
 * **Responsive Web Design**
+
+---
+## 👨‍🔧 Team Members
+
+* **Bhavya Kumar Singh**
+* **Pragyensh Pritiman Panda**
+* **Ritika Kasana**
+* **Aman Kumar**
+* **Rajat Naik**
+* **Jiya Jahnavi**
 
 ---
 
